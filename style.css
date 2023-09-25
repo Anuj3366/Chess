@@ -2,6 +2,8 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-user-select: none;
+    user-select: none;
 }
 .container{
     width: 100%;
@@ -42,5 +44,15 @@ h1{
     color: grey;
 }
 .darkcell{
-    opacity: 0.5;
+    opacity: 1;
+}
+.whitepawn{
+    cursor: pointer;
+    color:rgb(216, 216, 216);
+    font-size:36px;
+}
+.blackpawn{
+    cursor: pointer;
+    color:rgb(41, 41, 41);
+    font-size:36px;
 }
