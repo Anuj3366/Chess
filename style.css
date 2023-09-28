@@ -27,21 +27,24 @@ h1{
     display: inline-block;
     height: 50px;
     width: 50px;
+    text-align: center;
 }
 .cellblack{
     background-color: black;
     display: inline-block;
     height: 50px;
     width: 50px;
+    text-align: center;
 }
 .displayChar{
     position: absolute;
     color: grey;
-    transform:translateX(-170%)
+    transform:translateX(-170%);
 }
 .displayNum{
     position: absolute;
     color: grey;
+    left: 0;
 }
 .darkcell{
     opacity: 1;
@@ -49,10 +52,10 @@ h1{
 .whitepawn{
     cursor: pointer;
     color:rgb(216, 216, 216);
-    font-size:36px;
+    font-size:46px;
 }
 .blackpawn{
     cursor: pointer;
     color:rgb(41, 41, 41);
-    font-size:36px;
+    font-size:46px;
 }
