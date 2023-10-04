@@ -1,55 +1,53 @@
-*{
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     -webkit-user-select: none;
     user-select: none;
 }
-.container{
-    width: 100%;
-    height: 100%;
-}
-h1{
+
+body {
+    width: 100vw;
+    height: 100vh;
+    background-color: rgb(255, 255, 255);
     text-align: center;
-    font-size: 3rem;
 }
 #board{
+    width: 400px;
+    height: 400px;
     margin: auto;
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    width:407px ;
-    height:432px;
-    border: 2px solid black;
-    transform: scale(1);
+    align-items: center;
 }
-.cell{
-    background-color: white;
-    display: inline-block;
-    height: 50px;
+
+.cell {
     width: 50px;
-    text-align: center;
+    height: 50px;
+    border: 1.5px solid grey;
+    position: relative;
+    aspect-ratio: 1/1;
 }
-.cellblack{
+
+.blackcell {
     background-color: black;
-    display: inline-block;
-    height: 50px;
-    width: 50px;
-    text-align: center;
+}
+
+.whitecell {
+    background-color: white;
+}
+
+.displayNum{
+    color:grey;
+    position: absolute;
+    top: 0;
+    right:0;
 }
 .displayChar{
+    color:grey;
     position: absolute;
-    color: grey;
-    transform:translateX(-170%);
+    top: 0;
+    left:0;
 }
-.displayNum{
-    position: absolute;
-    color: grey;
-    left: 0;
-}
-.darkcell{
-    opacity: 1;
-}
-.whitepawn{
+/* .whitepawn{
     cursor: pointer;
     color:rgb(216, 216, 216);
     font-size:46px;
@@ -58,4 +56,4 @@ h1{
     cursor: pointer;
     color:rgb(41, 41, 41);
     font-size:46px;
-}
+} */
