@@ -1,11 +1,7 @@
-
-
 import pawnFunctions from './functions/pawn.js';
-pawnFunctions.createPawn();
+
 var currentPlayer = 'white';
-window.currentPlayer = currentPlayer;
 var totalMoves = 0;
-window.totalMoves = totalMoves;
 
 function createStructure() {
     var board = document.getElementById('board');
@@ -59,4 +55,31 @@ function newGame() {
 }
 newGame();
 
+function changePlayer() {
+    if (currentPlayer === 'white') {
+        currentPlayer = 'black';
+    } else {
+        currentPlayer = 'white';
+    }
+}
+function getPlayer() {
+    return currentPlayer;
+}
+
+function addTotalMoves() {
+    totalMoves += 1;
+}
+
+function getMoves() {
+    return totalMoves;
+}
+
+const chessExport = {
+    addTotalMoves,
+    changePlayer,
+    getMoves,
+    getPlayer
+}
+
+export default chessExport;
 

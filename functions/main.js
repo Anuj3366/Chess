@@ -1,3 +1,5 @@
+import chessExport from "../chess.js";
+
 function clearAll() {
     let allCells = document.getElementsByClassName('cell');
     for (let i = 0; i < allCells.length; i++) {
@@ -10,18 +12,14 @@ function clearAll() {
 
 
 function move(current, towards, currentMoves) {
-    if (currentMoves === totalMoves) {
-        totalMoves += 1;
-        console.log(`this move is ${totalMoves}`);
+    if (currentMoves === chessExport.getMoves()) {
+        chessExport.addTotalMoves();
+        console.log(`this move is ${chessExport.getMoves()}`);
         console.log(`Moving ${current} to ${towards}`);
         const currentSquare = document.getElementById(current);
         const toward = document.getElementById(towards);
         toward.appendChild(currentSquare);
-        if (currentPlayer === 'white') {
-            currentPlayer = 'black';
-        } else {
-            currentPlayer = 'white';
-        }
+        chessExport.changePlayer();
     }
     else {
         console.log(`this is a waste event listener , Removing it`);
@@ -32,26 +30,27 @@ function move(current, towards, currentMoves) {
 const moveClickListener = function (current, towards) {
     return function (event) {
         console.log(`${current} move clicked`);
-        move(current, towards, totalMoves);
+        move(current, towards, chessExport.getMoves());
+        const toward = document.getElementById(towards);
         toward.removeEventListener('click', moveClickListener(current, towards));
     };
 };
 
 function toMove(current, towards) {
-    const currentSquare = document.getElementById(current).parentNode.id;
     const toward = document.getElementById(towards);
     toward.classList.add('toMove');
-
-    toward.addEventListener('click', moveClickListener(current, towards));
+    const moveListener = moveClickListener(current, towards);
+    toward.addEventListener('click', moveListener);
 }
 
 
 
 
+
 function cut(current, towards, currentMoves) {
-    if (totalMoves === currentMoves) {
-        totalMoves += 1;
-        console.log(`this move is ${totalMoves}`);
+    if (chessExport.getMoves() === currentMoves) {
+        chessExport.addTotalMoves();
+        console.log(`this move is ${chessExport.getMoves()}`);
         console.log(`cutting from ${current} to ${towards}`);
         const currentSquare = document.getElementById(current);
         const toward = document.getElementById(towards);
@@ -60,12 +59,7 @@ function cut(current, towards, currentMoves) {
             toward.removeChild(pieceToRemove);
         }
         toward.appendChild(currentSquare);
-
-        if (currentPlayer === 'white') {
-            currentPlayer = 'black';
-        } else {
-            currentPlayer = 'white';
-        }
+        chessExport.changePlayer();
     }
     else {
         console.log(`this is a waste event listener , Removing it`);
@@ -76,7 +70,7 @@ function cut(current, towards, currentMoves) {
 const cutClickListener = function (current, towards) {
     return function () {
         console.log(`${current} cut clicked`);
-        cut(current, towards, totalMoves);
+        cut(current, towards, chessExport.getMoves());
         toward.removeEventListener('click', cutClickListener(current, towards));
     };
 };
@@ -85,7 +79,7 @@ const cutClickListener = function (current, towards) {
 function toCut(current, towards) {
     const toward = document.getElementById(towards);
     const towardPiece = toward.querySelector('i');
-    if (!towardPiece.className.includes(currentPlayer)) {
+    if (!towardPiece.className.includes(chessExport.getPlayer())) {
         console.log(`toward: ${towards} and current: ${current}`);
         toward.classList.add('toCut');
         toward.addEventListener('click', cutClickListener(current, towards));

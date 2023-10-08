@@ -1,13 +1,14 @@
 import globalFunctions from './main.js';
+import chessExport from "../chess.js";
+
 
 function clickPawn(pawnId) {
     globalFunctions.clearAll();
-
-    if (pawnId.charAt(0) === 'b' && currentPlayer === 'white') {
+    if (pawnId.charAt(0) === 'b' && chessExport.getPlayer() === 'white') {
         console.log('Not your turn');
         return;
     }
-    if (pawnId.charAt(0) === 'w' && currentPlayer === 'black') {
+    if (pawnId.charAt(0) === 'w' && chessExport.getPlayer() === 'black') {
         console.log('Not your turn');
         return;
     }
@@ -19,10 +20,10 @@ function clickPawn(pawnId) {
     console.log(`Pawn ${pawnId} is in ${currentRow}${currentCol}`);
 
     let direction = 1;
-    if ((currentRow === 'b' && currentPlayer === 'black') || (currentRow === 'g' && currentPlayer === 'white')) {
+    if ((currentRow === 'b' && chessExport.getPlayer() === 'black') || (currentRow === 'g' && chessExport.getPlayer() === 'white')) {
         direction += 1;
     }
-    const cutingRow = (currentPlayer === 'white') ? -1 : 1;
+    const cutingRow = (chessExport.getPlayer() === 'white') ? -1 : 1;
     var idChar = String.fromCharCode(currentRow.charCodeAt(0) + cutingRow);
     var canCutId = `${idChar}${currentCol - 1}`;
     var cancut = document.getElementById(canCutId);
@@ -38,7 +39,7 @@ function clickPawn(pawnId) {
     }
 
     let tobreak = false;
-    if (currentPlayer === 'white') {
+    if (chessExport.getPlayer() === 'white') {
         for (var i = 0; i < direction; i++) {
             let idChar = String.fromCharCode(currentRow.charCodeAt(0) - i - 1);
             const nextSquareId = `${idChar}${currentCol}`;
