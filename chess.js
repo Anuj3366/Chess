@@ -101,17 +101,18 @@ function clickPawn(pawnId) {
                 toMove(pawnId, nextSquareId);
             }
         }
-        var cancut = document.getElementById(`${currentRow}${currentCol - 1}`);
+        var idChar = String.fromCharCode(currentRow.charCodeAt(0) - 1);
+        var canCutId = `${idChar}${currentCol - 1}`;
+        var cancut = document.getElementById(canCutId);
         if (currentCol - 1 < 0) cancut = null;
-        var cancut2 = document.getElementById(`${currentRow}${currentCol + 1}`);
+        var canCutId2 = `${idChar}${currentCol + 1}`;
+        var cancut2 = document.getElementById(canCutId2);
         if (currentCol + 1 > 7) cancut2 = null;
-        const hasChildIElement = ((cancut != null) && (cancut.querySelector('i') !== null));
-        if (i === cancut && hasChildIElement) {
-            toCut(pawnCurrent, cancut);
+        if ((cancut != null) && (cancut.querySelector('i') !== null)) {
+            toCut(pawnId, canCutId);
         }
-        const hasChildIElement2 = ((cancut2 != null) && (cancut2.querySelector('i') !== null));
-        if (i === cancut2 && hasChildIElement2) {
-            toCut(pawnCurrent, cancut2);
+        if ((cancut2 != null) && (cancut2.querySelector('i') !== null)) {
+            toCut(pawnId, canCutId2);
         }
     }
     else {
@@ -129,17 +130,18 @@ function clickPawn(pawnId) {
                 toMove(pawnId, nextSquareId);
             }
         }
-        var cancut = document.getElementById(`${currentRow}${currentCol - 1}`);
+        var idChar = String.fromCharCode(currentRow.charCodeAt(0) + 1);
+        var canCutId = `${idChar}${currentCol - 1}`;
+        var cancut = document.getElementById(canCutId);
         if (currentCol - 1 < 0) cancut = null;
-        var cancut2 = document.getElementById(`${currentRow}${currentCol + 1}`);
+        var canCutId2 = `${idChar}${currentCol + 1}`;
+        var cancut2 = document.getElementById(canCutId2);
         if (currentCol + 1 > 7) cancut2 = null;
-        const hasChildIElement = ((cancut != null) && (cancut.querySelector('i') !== null));
-        if (i === cancut && hasChildIElement) {
-            toCut(pawnCurrent, cancut);
+        if ((cancut != null) && (cancut.querySelector('i') !== null)) {
+            toCut(pawnId, canCutId);
         }
-        const hasChildIElement2 = ((cancut2 != null) && (cancut2.querySelector('i') !== null));
-        if (i === cancut2 && hasChildIElement2) {
-            toCut(pawnCurrent, cancut2);
+        if ((cancut2 != null) && (cancut2.querySelector('i') !== null)) {
+            toCut(pawnId, canCutId2);
         }
     }
 }
@@ -169,9 +171,37 @@ function move(current, towards) {
     clearAll();
 }
 
+
 function toCut(current, towards) {
-    return;
+    const currentSquare = document.getElementById(current).parentNode.id;
+    const toward = document.getElementById(towards);
+    toward.classList.add('toCut');
+    toward.addEventListener('click', function () {
+        console.log(`${current} clicked`);
+        cut(currentSquare, towards);
+    });
 }
+
+function cut(current, towards) {
+    console.log(`cutting from ${current} to ${towards}`);
+    const currentSquare = document.getElementById(current);
+    const currentPiece = currentSquare.querySelector('i');
+    const toward = document.getElementById(towards);
+    const pieceToRemove = toward.querySelector('i');
+    if (pieceToRemove) {
+        toward.removeChild(pieceToRemove);
+    }
+    toward.appendChild(currentPiece);
+
+    if (currentPlayer === 'white') {
+        currentPlayer = 'black';
+    } else {
+        currentPlayer = 'white';
+    }
+    clearAll();
+}
+
+
 
 function clearAll() {
     var allCells = document.getElementsByClassName('cell');
