@@ -67,11 +67,11 @@ function createPawn(className, i) {
 function clickPawn(pawnId) {
     clearAll();
     if (pawnId.charAt(0) === 'b' && currentPlayer === 'white') {
-        alert('Not your turn');
+        console.log('Not your turn');
         return;
     }
     if (pawnId.charAt(0) === 'w' && currentPlayer === 'black') {
-        alert('Not your turn');
+        console.log('Not your turn');
         return;
     }
 
