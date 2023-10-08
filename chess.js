@@ -1,19 +1,18 @@
-newGame();
-
+let currentPlayer = 'white';
 
 function createStructure() {
     var board = document.getElementById('board');
     var ChessTable = document.createElement('table');
-    var rowNames = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    var colNames = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
     for (var i = 0; i < 8; i++) {
         var tr = document.createElement('tr');
-        tr.id = `${rowNames[i]}`;
+        tr.id = `${colNames[i]}`;
         for (var j = 0; j < 8; j++) {
             var td = document.createElement('td');
             if (j == 0) {
                 var displayChar = document.createElement('span');
                 displayChar.setAttribute('class', 'displayChar');
-                displayChar.innerHTML = `${rowNames[i]}`;
+                displayChar.innerHTML = `${colNames[i]}`;
                 td.appendChild(displayChar);
             }
             if (i == 7) {
@@ -22,7 +21,7 @@ function createStructure() {
                 displayNum.innerHTML = `${j + 1}`;
                 td.appendChild(displayNum);
             }
-            td.id = `${rowNames[i]}${j}`;
+            td.id = `${colNames[i]}${j}`;
             if ((i + j) % 2 == 0) {
                 td.setAttribute('class', 'cell whitecell');
                 tr.appendChild(td);
@@ -43,110 +42,143 @@ function newGame() {
 
     // making for pawns only
     for (var i = 0; i < 8; i++) {
-        var blackpawn = blackpawn(i);
+        var blackpawn = createPawn("blackpawn", i);
         var putting = document.getElementById(`b${i}`);
         putting.appendChild(blackpawn);
     }
     for (var i = 0; i < 8; i++) {
-        var whilepawn = whilepawn(i);
-        var putting = document.getElementById(`b${i}`);
-        putting.appendChild(whilepawn);
+        var whitepawn = createPawn("whitepawn", i);
+        var putting = document.getElementById(`g${i}`);
+        putting.appendChild(whitepawn);
     }
 }
 
-function blackpawn(i) {
+function createPawn(className, i) {
     var pawn = document.createElement('i');
-    pawn.className = ' fa-solid fa-chess-pawn';
-    pawn.className += ' ';
-    pawn.id = `b${i}`;
+    pawn.className = `fas fa-chess-pawn ${className}`;
+    pawn.id = `${className}${i}`;
     pawn.addEventListener('click', function () {
-        console.log('blackpawns clicked');
-        black_pawn_move(pawn.id);
+        console.log(`${pawn.id} clicked`);
+        clickPawn(`${className}${i}`);
     });
     return pawn;
 }
 
-// function black_pawn_move(id) {
-//     console.log('black pawn move called', id.charAt(0) + (parseInt(id.charAt(1))) + id.charAt(2));
-//     var current = document.getElementById(`${id.charAt(1)}${id.charAt(2)}`);
-//     var tomove = document.getElementById(`${id.charAt(1)}${parseInt(id.charAt(2)) - 1}`);
-//     tomove.className += ' clickcell';
-//     click_clickcell(current, tomove);
-//     if (id.charAt(2) == 6) {
-//         console.log("is at 6 so going up 2");
-//         var tomove2 = document.getElementById(`${parseInt(id.charAt(1)) - 2}${id.charAt(2)}`);
-//         tomove2.className += ' clickcell';
-//         click_clickcell(current, tomove2);
-//     }
-// }
+function clickPawn(pawnId) {
+    clearAll();
+    if (pawnId.charAt(0) === 'b' && currentPlayer === 'white') {
+        alert('Not your turn');
+        return;
+    }
+    if (pawnId.charAt(0) === 'w' && currentPlayer === 'black') {
+        alert('Not your turn');
+        return;
+    }
 
+    const pawn = document.getElementById(pawnId);
+    const pawnCurrent = pawn.parentNode.id;
+    const currentCol = parseInt(pawnCurrent.charAt(1));
+    const currentRow = pawnCurrent.charAt(0);
+    console.log(`Pawn ${pawnId} is in ${currentRow}${currentCol}`);
 
-function whitepawn(i) {
-    var pawn = document.createElement('i');
-    pawn.className = ' fas fa-chess-pawn';
-    pawn.className += ' whitepawn';
-    pawn.id = `w${i}`;
-    pawn.addEventListener('click', function () {
-        console.log('whitepawns clicked');
-        white_pawn_move(pawn.id);
-    });
-    return pawn;
+    let direction = 1;
+    if ((currentRow === 'b' && currentPlayer === 'black') || (currentRow === 'g' && currentPlayer === 'white')) {
+        direction += 1;
+    }
+
+    if (currentPlayer === 'white') {
+        for (var i = 0; i < direction; i++) {
+            let idChar = String.fromCharCode(currentRow.charCodeAt(0) - i - 1);
+            const nextSquareId = `${idChar}${currentCol}`;
+            const nextSquare = document.getElementById(nextSquareId);
+            const hasChildIElement = nextSquare.querySelector('i') !== null;
+            if (hasChildIElement) {
+                console.log(`Cannot move to ${nextSquareId}, square is occupied.`);
+                return;
+            }
+            else {
+                console.log(`Can move to ${nextSquareId}`);
+                toMove(pawnId, nextSquareId);
+            }
+        }
+        var cancut = document.getElementById(`${currentRow}${currentCol - 1}`);
+        if (currentCol - 1 < 0) cancut = null;
+        var cancut2 = document.getElementById(`${currentRow}${currentCol + 1}`);
+        if (currentCol + 1 > 7) cancut2 = null;
+        const hasChildIElement = ((cancut != null) && (cancut.querySelector('i') !== null));
+        if (i === cancut && hasChildIElement) {
+            toCut(pawnCurrent, cancut);
+        }
+        const hasChildIElement2 = ((cancut2 != null) && (cancut2.querySelector('i') !== null));
+        if (i === cancut2 && hasChildIElement2) {
+            toCut(pawnCurrent, cancut2);
+        }
+    }
+    else {
+        for (var i = 0; i < direction; i++) {
+            let idChar = String.fromCharCode(currentRow.charCodeAt(0) + i + 1);
+            const nextSquareId = `${idChar}${currentCol}`;
+            const nextSquare = document.getElementById(nextSquareId);
+            const hasChildIElement = nextSquare.querySelector('i') !== null;
+            if (hasChildIElement) {
+                console.log(`Cannot move to ${nextSquareId}, square is occupied.`);
+                return;
+            }
+            else {
+                console.log(`Can move to ${nextSquareId}`);
+                toMove(pawnId, nextSquareId);
+            }
+        }
+        var cancut = document.getElementById(`${currentRow}${currentCol - 1}`);
+        if (currentCol - 1 < 0) cancut = null;
+        var cancut2 = document.getElementById(`${currentRow}${currentCol + 1}`);
+        if (currentCol + 1 > 7) cancut2 = null;
+        const hasChildIElement = ((cancut != null) && (cancut.querySelector('i') !== null));
+        if (i === cancut && hasChildIElement) {
+            toCut(pawnCurrent, cancut);
+        }
+        const hasChildIElement2 = ((cancut2 != null) && (cancut2.querySelector('i') !== null));
+        if (i === cancut2 && hasChildIElement2) {
+            toCut(pawnCurrent, cancut2);
+        }
+    }
 }
 
-// var whitepawns = document.querySelectorAll('.whitepawn');
-// whitepawns.forEach(function (pawn) {
+function toMove(current, towards) {
+    const currentSquare = document.getElementById(current).parentNode.id;
+    const toward = document.getElementById(towards);
+    toward.classList.add('toMove');
+    toward.addEventListener('click', function () {
+        console.log(`${current} clicked`);
+        move(currentSquare, towards);
+    });
+}
 
-// });
+function move(current, towards) {
+    console.log(`Moving ${current} to ${towards}`);
+    const currentSquare = document.getElementById(current);
+    const currentPiece = currentSquare.querySelector('i');
+    const toward = document.getElementById(towards);
+    toward.appendChild(currentPiece);
 
+    if (currentPlayer === 'white') {
+        currentPlayer = 'black';
+    } else {
+        currentPlayer = 'white';
+    }
+    clearAll();
+}
 
-// function white_pawn_move(id) {
-//     console.log('white pawn move called', id.charAt(0) + (parseInt(id.charAt(1))) + id.charAt(2));
-//     var tomove = document.getElementById(`${parseInt(id.charAt(1)) + 1}${id.charAt(2)}`);
-//     tomove.className = ' clickcell';
-//     tomove.addEventListener('click', function () {
-//         console.log('click to move');
-//         tomove.className -= ' clickcell';
-//         move(id.charAt(0), tomove.id);
+function toCut(current, towards) {
+    return;
+}
 
-//     });
-//     if (id.charAt(0) == 6) {
-//         var tomove2 = document.getElementById(`${parseInt(id.charAt(1)) + 2}${id.charAt(2)}`);
-//         tomove2.className += ' clickcell';
-//         tomove2.addEventListener('click', function () {
-//             console.log('click to move');
-//             tomove2.className -= ' clickcell';
-//             tomove.className -= ' clickcell';
-//             move(id.charAt(0), tomove2.id);
-//         });
-//     }
-//     document.addEventListener('click', function () {
-//         console.log('elsewhere clicked');
-//         tomove.className -= ' clickcell';
-//         if (id.charAt(0) == 6) {
-//             var tomove2 = document.getElementById(`${parseInt(id.charAt(1)) + 2}${id.charAt(2)}`);
-//             tomove2.className -= ' clickcell';
-//         }
-//     });
-// }
+function clearAll() {
+    var allCells = document.getElementsByClassName('cell');
+    for (var i = 0; i < allCells.length; i++) {
+        allCells[i].classList.remove('toMove');
+        allCells[i].classList.remove('toCut');
+    }
+}
 
-// function click_clickcell(current, tomove) {
-//     tomove.addEventListener('click', function () {
-//         console.log('click to move');
-//         tomove.className -= ' clickcell';
-//         move(current, tomove.id);
-//     });
-//     document.addEventListener('click', function () {
-//         console.log('elsewhere clicked');
-//         tomove.className -= ' clickcell';
-//     });
-// }
-
-
-
-
-// function move(i, j) {
-//     var cell = document.getElementById(`${i}`);
-//     var cell2 = document.getElementById(`${j}`);
-//     cell2.appendChild(cell.innerHTML);
-//     cell.innerHTML = '';
-// }
+newGame();
