@@ -85,7 +85,22 @@ function clickPawn(pawnId) {
     if ((currentRow === 'b' && currentPlayer === 'black') || (currentRow === 'g' && currentPlayer === 'white')) {
         direction += 1;
     }
+    const cutingRow = (currentPlayer === 'white') ? -1 : 1;
+    var idChar = String.fromCharCode(currentRow.charCodeAt(0) + cutingRow);
+    var canCutId = `${idChar}${currentCol - 1}`;
+    var cancut = document.getElementById(canCutId);
+    if (currentCol - 1 < 0) cancut = null;
+    var canCutId2 = `${idChar}${currentCol + 1}`;
+    var cancut2 = document.getElementById(canCutId2);
+    if (currentCol + 1 > 7) cancut2 = null;
+    if ((cancut != null) && (cancut.querySelector('i') !== null)) {
+        toCut(pawnId, canCutId);
+    }
+    if ((cancut2 != null) && (cancut2.querySelector('i') !== null)) {
+        toCut(pawnId, canCutId2);
+    }
 
+    let tobreak = false;
     if (currentPlayer === 'white') {
         for (var i = 0; i < direction; i++) {
             let idChar = String.fromCharCode(currentRow.charCodeAt(0) - i - 1);
@@ -94,25 +109,13 @@ function clickPawn(pawnId) {
             const hasChildIElement = nextSquare.querySelector('i') !== null;
             if (hasChildIElement) {
                 console.log(`Cannot move to ${nextSquareId}, square is occupied.`);
-                return;
+                tobreak = true;
+                break;
             }
             else {
                 console.log(`Can move to ${nextSquareId}`);
                 toMove(pawnId, nextSquareId);
             }
-        }
-        var idChar = String.fromCharCode(currentRow.charCodeAt(0) - 1);
-        var canCutId = `${idChar}${currentCol - 1}`;
-        var cancut = document.getElementById(canCutId);
-        if (currentCol - 1 < 0) cancut = null;
-        var canCutId2 = `${idChar}${currentCol + 1}`;
-        var cancut2 = document.getElementById(canCutId2);
-        if (currentCol + 1 > 7) cancut2 = null;
-        if ((cancut != null) && (cancut.querySelector('i') !== null)) {
-            toCut(pawnId, canCutId);
-        }
-        if ((cancut2 != null) && (cancut2.querySelector('i') !== null)) {
-            toCut(pawnId, canCutId2);
         }
     }
     else {
@@ -123,37 +126,32 @@ function clickPawn(pawnId) {
             const hasChildIElement = nextSquare.querySelector('i') !== null;
             if (hasChildIElement) {
                 console.log(`Cannot move to ${nextSquareId}, square is occupied.`);
-                return;
+                tobreak = true;
+                break;
             }
             else {
                 console.log(`Can move to ${nextSquareId}`);
                 toMove(pawnId, nextSquareId);
             }
         }
-        var idChar = String.fromCharCode(currentRow.charCodeAt(0) + 1);
-        var canCutId = `${idChar}${currentCol - 1}`;
-        var cancut = document.getElementById(canCutId);
-        if (currentCol - 1 < 0) cancut = null;
-        var canCutId2 = `${idChar}${currentCol + 1}`;
-        var cancut2 = document.getElementById(canCutId2);
-        if (currentCol + 1 > 7) cancut2 = null;
-        if ((cancut != null) && (cancut.querySelector('i') !== null)) {
-            toCut(pawnId, canCutId);
-        }
-        if ((cancut2 != null) && (cancut2.querySelector('i') !== null)) {
-            toCut(pawnId, canCutId2);
-        }
+    }
+
+    if (tobreak) {
+        return;
     }
 }
+
 
 function toMove(current, towards) {
     const currentSquare = document.getElementById(current).parentNode.id;
     const toward = document.getElementById(towards);
     toward.classList.add('toMove');
-    toward.addEventListener('click', function () {
-        console.log(`${current} clicked`);
+    const clickListener = function () {
+        console.log(`${current} move clicked`);
         move(currentSquare, towards);
-    });
+        toward.removeEventListener('click', clickListener);
+    };
+    toward.addEventListener('click', clickListener);
 }
 
 function move(current, towards) {
@@ -162,24 +160,27 @@ function move(current, towards) {
     const currentPiece = currentSquare.querySelector('i');
     const toward = document.getElementById(towards);
     toward.appendChild(currentPiece);
-
     if (currentPlayer === 'white') {
         currentPlayer = 'black';
     } else {
         currentPlayer = 'white';
     }
+    
     clearAll();
 }
+
 
 
 function toCut(current, towards) {
     const currentSquare = document.getElementById(current).parentNode.id;
     const toward = document.getElementById(towards);
     toward.classList.add('toCut');
-    toward.addEventListener('click', function () {
-        console.log(`${current} clicked`);
+    const clickListener = function () {
+        console.log(`${current} cut clicked`);
         cut(currentSquare, towards);
-    });
+        toward.removeEventListener('click', clickListener);
+    };
+    toward.addEventListener('click', clickListener);
 }
 
 function cut(current, towards) {
