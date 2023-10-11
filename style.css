@@ -1,72 +1,42 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-user-select: none;
-    user-select: none;
-}
+/* Color To Use */
+/* Greeen Color */
+/* 769656 */
+/* Cream Color */
+/* EEEED2 */
 
-body {
-    width: 100vw;
-    height: 100vh;
-    background-color: rgb(255, 255, 255);
-    text-align: center;
-}
-#board{
-    width: 400px;
-    height: 400px;
-    margin: auto;
+.dad-container {
+    display: flex;
     align-items: center;
+    justify-content: center;
+    margin-top: 2rem;
+
 }
 
-.cell {
-    width: 50px;
-    height: 50px;
-    border: 1.5px solid grey;
-    position: relative;
-    aspect-ratio: 1/1;
+.square {
+    background-color: #EEEED2;
+    width: 70px;
+    height: 70px;
 }
 
-.blackcell {
-    background-color: black;
+
+.main-container {
+    display: grid;
+    border-radius: 5px;
+    grid-template-columns: repeat(8, 1fr);
+    height: 560px;
+    /* 70px * 8 = 560px */
+    width: 560px;
+    overflow: hidden;
 }
 
-.whitecell {
-    background-color: white;
+.files:nth-of-type(odd) .square:nth-of-type(even) {
+    background-color: #769656;
 }
 
-.displayNum{
-    color:grey;
-    position: absolute;
-    top: 0;
-    right:0;
-}
-.displayChar{
-    color:grey;
-    position: absolute;
-    top: 0;
-    left:0;
-}
-.whitepawn{
-    cursor: pointer;
-    color:rgb(216, 216, 216);
-    font-size:46px;
-}
-.blackpawn{
-    cursor: pointer;
-    color:rgb(41, 41, 41);
-    font-size:46px;
+.files:nth-of-type(even) .square:nth-of-type(odd) {
+    background-color: #769656;
 }
 
-.toCut{
-    cursor: pointer;
-    box-shadow: 0px 0px 10px rgb(248, 41, 41);
-    border: 1.5px solid rgb(248, 41, 41);
-    z-index: 1000;
-}
-.toMove{
-    cursor: pointer;
-    box-shadow: 0px 0px 10px rgb(47, 0, 255);
-    border: 1.5px solid rgb(47, 0, 255);
-    z-index: 1000;
+img {
+    width: 100%;
 }
