@@ -1,6 +1,7 @@
 let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
 let runningEventListener = [];
+let clickEventListener = [];
 rExcuteAllEvents();
 mapping();
 displayPlayer.innerHTML = currentPlayer;
@@ -19,8 +20,9 @@ function changePlayer() {
 
 //excute all events again
 function rExcuteAllEvents() {
-  allYellowUI();
+  rclickEventListener();
   pawnEvent();
+  allYellowUI();
 }
 
 //remove all event Listeners
@@ -29,6 +31,16 @@ function removeAllEventListeners() {
     element.removeEventListener(event, handler);
   }
   runningEventListener = [];
+}
+
+//remove click listener
+function rclickEventListener() {
+  for (const { element, event, handler } of clickEventListener) {
+    element.removeEventListener(event, handler);
+    element.removeAttribute("mayCut");
+    element.removeAttribute("mayMove");
+  }
+  clickEventListener = [];
 }
 
 //mapping the board
@@ -48,6 +60,7 @@ function mapping() {
 
 //reload the page
 function reset() {
+  rExcuteAllEvents();
   location.reload();
 }
 
@@ -101,6 +114,31 @@ function allYellowUI() {
   }
 }
 
+//move and cut functions
+function move(square, peice) {
+  if (square.querySelector('img')) {
+    square.classList.remove("mayMove");
+    square.classList.remove("mayCut");
+    square.querySelector('img').remove();
+    square.appendChild(peice);
+  }
+  else {
+    square.appendChild(peice);
+  }
+  changePlayer();
+};
+
+
+
+
+let addEvent = [];
+function addEvents() {
+  for (const { element, event, handler } of runningEventListener) {
+    element.addEventListener(event, handler);
+  }
+  addEvent = [];
+}
+
 
 //All pawns events
 function pawnEvent() {
@@ -108,35 +146,67 @@ function pawnEvent() {
   allPawns.forEach((pawn) => {
     if (pawn.src.includes(currentPlayer)) {
       pawn.addEventListener("click", pawnClickHandler);
-      runningEventListener.push({ element: pawn, event: "click", handler: pawnClickHandler });
+      runningEventListener.push({ element: pawn, event: "click", handler: () => pawnClickHandler });
     }
   });
 }
 function pawnClickHandler(event) {
+  rclickEventListener();
   const pawn = event.target;
-  const pawnId = pawn.parentElement.getAttribute("id");
-  let id = pawn.parentElement.getAttribute("id");
-  let direction = currentPlayer === "white" ? -1 : 1;
-  let id1 = id.charAt(0) + (parseInt(id.charAt(1)) + direction);
-  let element1 = document.getElementById(id1);
+  const parentId = pawn.parentElement.getAttribute("id");
+  const direction = currentPlayer === "white" ? -1 : 1;
+  const id1 = parentId.charAt(0) + (parseInt(parentId.charAt(1)) + direction);
+  console.log(id1);
+  const element1 = document.getElementById(id1);
 
-  // Check if element1 contains an IMG element
-  if (!element1.querySelector('img')) {
-    console.log("Adding 'mayMove' class to Element1");
+  if (element1.querySelector('img') === null) {
     element1.classList.add("mayMove");
+    addEvent.push({ element: element1, event: "click", handler: () => () => move(element1, pawn) });
+    clickEventListener.push({ element: element1, event: "click", handler: () => () => move(element1, pawn) });
   }
 
-  if (parseInt(pawnId.charAt(1)) === 2) {
-    let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
-    let element2 = document.getElementById(id2);
-
-    // Check if element1 and element2 both don't contain IMG elements
-    if (!element1.querySelector('img') && !element2.querySelector('img')) {
-      console.log("Adding 'mayMove' class to Element2");
+  if (
+    ((parseInt(parentId.charAt(1)) === 2 && currentPlayer == "black") || ((parseInt(parentId.charAt(1)) === 7) && currentPlayer == "white")) &&
+    !element1.querySelector('img')
+  ) {
+    const id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
+    const element2 = document.getElementById(id2);
+    if (!element2.querySelector('img')) {
       element2.classList.add("mayMove");
+      addEvent.push({ element: element2, event: "click", handler: () => move(element2, pawn) });
+      clickEventListener.push({ element: element2, event: "click", handler: () => move(element2, pawn) });
     }
   }
+
+  const leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1;
+  const rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1;
+  const leftSquare = document.getElementById(leftSquareId);
+  const rightSquare = document.getElementById(rightSquareId);
+
+  if (
+    leftSquare &&
+    leftSquare.querySelector('img') &&
+    !leftSquare.querySelector('img').src.includes(currentPlayer)
+  ) {
+    leftSquare.classList.add("mayCut");
+    addEvent.push({ element: leftSquare, event: "click", handler: () => move(leftSquare, pawn) });
+    clickEventListener.push({ element: leftSquare, event: "click", handler: () => move(leftSquare, pawn) });
+  }
+
+  if (
+    rightSquare &&
+    rightSquare.querySelector('img') &&
+    !rightSquare.querySelector('img').src.includes(currentPlayer)
+  ) {
+    rightSquare.classList.add("mayCut");
+    addEvent.push({ element: rightSquare, event: "click", handler: () => move(rightSquare, pawn) });
+    clickEventListener.push({ element: rightSquare, event: "click", handler: () => move(rightSquare, pawn) });
+  }
+  addEvents();
 }
+
+
+
 
 
 
