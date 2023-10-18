@@ -1,12 +1,15 @@
+mapping();
 let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
 let runningEventListener = [];
 let clickEventListener = [];
-rExcuteAllEvents();
-mapping();
 displayPlayer.innerHTML = currentPlayer;
+rExcuteAllEvents();
+
+
 //change player and rerun all events again and remove all event listeners
 function changePlayer() {
+  // console.log("change player");
   if (currentPlayer === "white") {
     currentPlayer = "black";
   }
@@ -14,12 +17,13 @@ function changePlayer() {
     currentPlayer = "white";
   }
   rExcuteAllEvents();
-  removeEventListener();
   displayPlayer.innerHTML = currentPlayer;
 }
 
 //excute all events again
 function rExcuteAllEvents() {
+  // console.log("rExcuteAllEvents");
+  removeAllEventListeners();
   rclickEventListener();
   pawnEvent();
   allYellowUI();
@@ -27,7 +31,8 @@ function rExcuteAllEvents() {
 
 //remove all event Listeners
 function removeAllEventListeners() {
-  for (const { element, event, handler } of runningEventListener) {
+  // console.log("removeAllEventListeners");
+  for (let { element, event, handler } of runningEventListener) {
     element.removeEventListener(event, handler);
   }
   runningEventListener = [];
@@ -35,22 +40,24 @@ function removeAllEventListeners() {
 
 //remove click listener
 function rclickEventListener() {
-  for (const { element, event, handler } of clickEventListener) {
+  // console.log("rclickEventListener");
+  for (let { element, event, handler } of clickEventListener) {
     element.removeEventListener(event, handler);
-    element.removeAttribute("mayCut");
-    element.removeAttribute("mayMove");
+    element.classList.remove("mayCut");
+    element.classList.remove("mayMove");
   }
   clickEventListener = [];
 }
 
 //mapping the board
 function mapping() {
-  const arrayOfFiles = document.querySelectorAll(".files");
-  const filesNameArray = ["a", "b", "c", "d", "e", "f", "g", "h"];
+  // console.log("mapping");
+  let arrayOfFiles = document.querySelectorAll(".files");
+  let filesNameArray = ["a", "b", "c", "d", "e", "f", "g", "h"];
   let fileNumber = 0;
-  for (const i of arrayOfFiles) {
+  for (let i of arrayOfFiles) {
     let counter = 1;
-    for (const j of i.children) {
+    for (let j of i.children) {
       j.setAttribute("id", filesNameArray[fileNumber] + counter);
       counter++;
     }
@@ -60,17 +67,19 @@ function mapping() {
 
 //reload the page
 function reset() {
+  // console.log("reset");
   rExcuteAllEvents();
   location.reload();
 }
 
 // UI for all yellow background squares
+let clickedElement = [];
 function allYellowUI() {
-  const allSquares = document.getElementsByClassName("square");
-  const clickedElement = [];
-
-  for (const x of allSquares) {
-    x.addEventListener("click", function () {
+  console.log("allYellowUI");
+  const allSquares = document.querySelectorAll(".square");
+  for (let x of allSquares) {
+    console.log("adding event listener to ", x);
+    let adding = function () {
       const idOfElement = x.getAttribute("id");
       const innerHtmlOfElement = document.getElementById(idOfElement).innerHTML;
 
@@ -87,126 +96,97 @@ function allYellowUI() {
           alert("Not your turn");
         }
       }
-    });
+    }
 
-    runningEventListener.push({
-      element: x,
-      event: "click",
-      listener: function () {
-        const idOfElement = x.getAttribute("id");
-        const innerHtmlOfElement = document.getElementById(idOfElement).innerHTML;
-
-        if (clickedElement.length > 0) {
-          clickedElement[0].removeAttribute("style");
-          clickedElement.pop();
-        }
-
-        if (innerHtmlOfElement.includes("black") || innerHtmlOfElement.includes("white")) {
-          if (innerHtmlOfElement.includes(currentPlayer)) {
-            document.getElementById(idOfElement).style.backgroundColor = "yellow";
-            clickedElement.push(x);
-          } else {
-            alert("Not your turn");
-          }
-        }
-      }
-    });
+    x.addEventListener("click", adding);
+    runningEventListener.push({ element: x, event: "click", handler: adding });
   }
 }
 
+
 //move and cut functions
 function move(square, peice) {
+  // console.log("used rclickEventListener to check if its really removing")
+  rclickEventListener();
+  console.log("moving from ", peice.parentElement, " to ", square)
   if (square.querySelector('img')) {
     square.classList.remove("mayMove");
     square.classList.remove("mayCut");
     square.querySelector('img').remove();
     square.appendChild(peice);
+    changePlayer();
   }
   else {
     square.appendChild(peice);
+    changePlayer();
   }
-  changePlayer();
 };
-
-
-
-
-let addEvent = [];
-function addEvents() {
-  for (const { element, event, handler } of runningEventListener) {
-    element.addEventListener(event, handler);
-  }
-  addEvent = [];
-}
 
 
 //All pawns events
 function pawnEvent() {
+  console.log("Running pawnEvent for", currentPlayer, " pawns");
   let allPawns = document.querySelectorAll("img[src*='pawn']");
   allPawns.forEach((pawn) => {
     if (pawn.src.includes(currentPlayer)) {
       pawn.addEventListener("click", pawnClickHandler);
-      runningEventListener.push({ element: pawn, event: "click", handler: () => pawnClickHandler });
+      runningEventListener.push({ element: pawn, event: "click", handler: pawnClickHandler });
     }
   });
 }
 function pawnClickHandler(event) {
   rclickEventListener();
-  const pawn = event.target;
-  const parentId = pawn.parentElement.getAttribute("id");
-  const direction = currentPlayer === "white" ? -1 : 1;
-  const id1 = parentId.charAt(0) + (parseInt(parentId.charAt(1)) + direction);
-  console.log(id1);
-  const element1 = document.getElementById(id1);
+  console.log("You click on pawn on ", event.target, " square");
+  let pawn = event.target;
+  let parentId = pawn.parentElement.getAttribute("id");
+  let direction = currentPlayer === "white" ? -1 : 1;
+  let id1 = parentId.charAt(0) + (parseInt(parentId.charAt(1)) + direction);
+  let element1 = document.getElementById(id1);
 
-  if (element1.querySelector('img') === null) {
+  if (!element1.hasChildNodes()) {
+    console.log("can move ahead ", element1);
     element1.classList.add("mayMove");
-    addEvent.push({ element: element1, event: "click", handler: () => () => move(element1, pawn) });
-    clickEventListener.push({ element: element1, event: "click", handler: () => () => move(element1, pawn) });
+    let moveHandler = () => move(element1, pawn);
+    element1.addEventListener("click", moveHandler);
+    clickEventListener.push({ element: element1, event: "click", handler: moveHandler });
   }
 
   if (
-    ((parseInt(parentId.charAt(1)) === 2 && currentPlayer == "black") || ((parseInt(parentId.charAt(1)) === 7) && currentPlayer == "white")) &&
-    !element1.querySelector('img')
-  ) {
-    const id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
-    const element2 = document.getElementById(id2);
-    if (!element2.querySelector('img')) {
+    ((parseInt(parentId.charAt(1)) === 2 && currentPlayer == "black") ||
+      (parseInt(parentId.charAt(1)) === 7 && currentPlayer == "white")
+    )) {
+    let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
+    let element2 = document.getElementById(id2);
+    if (!element2.hasChildNodes()) {
+      console.log("can move ahead ", element2);
       element2.classList.add("mayMove");
-      addEvent.push({ element: element2, event: "click", handler: () => move(element2, pawn) });
-      clickEventListener.push({ element: element2, event: "click", handler: () => move(element2, pawn) });
+      let moveHandler = () => move(element2, pawn);
+      element2.addEventListener("click", moveHandler);
+      clickEventListener.push({ element: element2, event: "click", handler: moveHandler });
     }
   }
 
-  const leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1;
-  const rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1;
-  const leftSquare = document.getElementById(leftSquareId);
-  const rightSquare = document.getElementById(rightSquareId);
+  let leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1;
+  let rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1;
+  let leftSquare = document.getElementById(leftSquareId);
+  let rightSquare = document.getElementById(rightSquareId);
 
-  if (
-    leftSquare &&
-    leftSquare.querySelector('img') &&
-    !leftSquare.querySelector('img').src.includes(currentPlayer)
-  ) {
+  if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer)) {
+    console.log("can cut ", leftSquare);
     leftSquare.classList.add("mayCut");
-    addEvent.push({ element: leftSquare, event: "click", handler: () => move(leftSquare, pawn) });
-    clickEventListener.push({ element: leftSquare, event: "click", handler: () => move(leftSquare, pawn) });
+    let moveHandler = () => move(leftSquare, pawn);
+    leftSquare.addEventListener("click", moveHandler);
+    clickEventListener.push({ element: leftSquare, event: "click", handler: moveHandler });
   }
 
-  if (
-    rightSquare &&
-    rightSquare.querySelector('img') &&
-    !rightSquare.querySelector('img').src.includes(currentPlayer)
-  ) {
+  if (rightSquare && rightSquare.hasChildNodes() && !rightSquare.querySelector('img').src.includes(currentPlayer)) {
+    console.log("can cut ", rightSquare);
     rightSquare.classList.add("mayCut");
-    addEvent.push({ element: rightSquare, event: "click", handler: () => move(rightSquare, pawn) });
-    clickEventListener.push({ element: rightSquare, event: "click", handler: () => move(rightSquare, pawn) });
+    let moveHandler = () => move(rightSquare, pawn);
+    rightSquare.addEventListener("click", moveHandler);
+    clickEventListener.push({ element: rightSquare, event: "click", handler: moveHandler });
   }
-  addEvents();
 }
-
-
-
 
 
 
