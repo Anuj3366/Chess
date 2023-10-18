@@ -27,6 +27,7 @@ function rExcuteAllEvents() {
   rclickEventListener();
   pawnEvent();
   rookEvent();
+  bishopEvent();
   allYellowUI();
 }
 
@@ -201,8 +202,6 @@ function pawnEvent() {
   });
 }
 
-
-
 //All rooks events
 function rookEvent() {
   // console.log("Running rookEvent for", currentPlayer, " rook");
@@ -249,9 +248,64 @@ function rookEvent() {
   }
   allRooks.forEach((rook) => {
     if (rook.src.includes(currentPlayer)) {
-      console.log("add click event on rook", rook);
+      // console.log("add click event on rook", rook);
       rook.addEventListener("click", rookClickHandler);
       runningEventListener.push({ element: rook, event: "click", handler: rookClickHandler });
+    }
+  });
+}
+
+//All bishop events
+function bishopEvent() {
+  let allBishops = document.querySelectorAll("img[src*='bishop']");
+  
+  const bishopClickHandler = function(event) {
+    rclickEventListener();
+    const checkAndAddSquares = (parentId, xDirection, yDirection) => {
+      let row = parseInt(parentId.charAt(1)) + yDirection;
+      let col = parentId.charCodeAt(0) + xDirection;
+      while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
+        const id = String.fromCharCode(col) + row;
+        const square = document.getElementById(id);
+  
+        if (!square.hasChildNodes() || !square.querySelector("img")) {
+          square.classList.add("mayMove");
+          let moveHandler = () => move(square, bishop);
+          square.addEventListener("click", moveHandler);
+          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+        }
+        else {
+          if (square.querySelector("img").src.includes(currentPlayer)) {
+            break;
+          } 
+          else {
+            square.classList.add("mayCut");
+            let moveHandler = () => move(square, bishop);
+            square.addEventListener("click", moveHandler);
+            clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+            break;
+          }
+        }
+  
+        row += yDirection;
+        col += xDirection;
+      }
+    };
+    
+    let bishop = event.target;
+    let parentId = bishop.parentElement.getAttribute("id");
+  
+    checkAndAddSquares(parentId, 1, 1);
+    checkAndAddSquares(parentId, 1, -1);
+    checkAndAddSquares(parentId, -1, 1);
+    checkAndAddSquares(parentId, -1, -1);
+  }
+  
+  allBishops.forEach((bishop) => {
+    if (bishop.src.includes(currentPlayer)) {
+      console.log("add click event on bishop", bishop);
+      bishop.addEventListener("click", bishopClickHandler);
+      runningEventListener.push({ element: bishop, event: "click", handler: bishopClickHandler });
     }
   });
 }
