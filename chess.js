@@ -26,6 +26,7 @@ function rExcuteAllEvents() {
   removeAllEventListeners();
   rclickEventListener();
   pawnEvent();
+  rookEvent();
   allYellowUI();
 }
 
@@ -117,7 +118,7 @@ function allYellowUI() {
 function move(square, peice) {
   // console.log("used rclickEventListener to check if its really removing")
   rclickEventListener();
-  console.log("moving from ", peice.parentElement, " to ", square)
+  // console.log("moving from ", peice.parentElement, " to ", square)
   if (square.querySelector('img')) {
     square.classList.remove("mayMove");
     square.classList.remove("mayCut");
@@ -133,8 +134,65 @@ function move(square, peice) {
 
 //All pawns events
 function pawnEvent() {
-  console.log("Running pawnEvent for", currentPlayer, " pawns");
+  // console.log("Running pawnEvent for", currentPlayer, " pawns");
   let allPawns = document.querySelectorAll("img[src*='pawn']");
+  const pawnClickHandler = function (event) {
+    rclickEventListener();
+    // console.log("You click on pawn on ", event.target, " square");
+    let pawn = event.target;
+    let parentId = pawn.parentElement.getAttribute("id");
+    let direction = currentPlayer === "white" ? -1 : 1;
+    let id1 = parentId.charAt(0) + (parseInt(parentId.charAt(1)) + direction);
+    let element1 = document.getElementById(id1);
+    // console.log(element1.hasChildNodes()? ("has child nodes" , element1) : "no child nodes");
+
+    if (!element1.hasChildNodes() || !element1.querySelector("img")) {
+      element1.classList.add("mayMove");
+      let moveHandler = () => move(element1, pawn);
+      element1.addEventListener("click", moveHandler);
+      clickEventListener.push({ element: element1, event: "click", handler: moveHandler });
+    }
+
+    if (
+      ((parseInt(parentId.charAt(1)) === 2 && currentPlayer == "black") ||
+        (parseInt(parentId.charAt(1)) === 7 && currentPlayer == "white")
+      )) {
+      let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
+      let element2 = document.getElementById(id2);
+      if (!element2.hasChildNodes() || !element2.querySelector("img")) {
+        // console.log("can move ahead ", element2);
+        element2.classList.add("mayMove");
+        let moveHandler = () => move(element2, pawn);
+        element2.addEventListener("click", moveHandler);
+        clickEventListener.push({ element: element2, event: "click", handler: moveHandler });
+      }
+    }
+
+    let leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1.charAt(1);
+    let rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1.charAt(1);
+    let leftSquare = document.getElementById(leftSquareId);
+    let rightSquare = document.getElementById(rightSquareId);
+    // console.log("leftSquareId", leftSquareId);
+    // console.log("rightSquareId", rightSquareId);
+    // console.log("leftSquare", leftSquare);
+    // console.log("rightSquare", rightSquare);
+
+    if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer)) {
+      // console.log("can cut ", leftSquare);
+      leftSquare.classList.add("mayCut");
+      let moveHandler = () => move(leftSquare, pawn);
+      leftSquare.addEventListener("click", moveHandler);
+      clickEventListener.push({ element: leftSquare, event: "click", handler: moveHandler });
+    }
+
+    if (rightSquare && rightSquare.hasChildNodes() && !rightSquare.querySelector('img').src.includes(currentPlayer)) {
+      // console.log("can cut ", rightSquare);
+      rightSquare.classList.add("mayCut");
+      let moveHandler = () => move(rightSquare, pawn);
+      rightSquare.addEventListener("click", moveHandler);
+      clickEventListener.push({ element: rightSquare, event: "click", handler: moveHandler });
+    }
+  };
   allPawns.forEach((pawn) => {
     if (pawn.src.includes(currentPlayer)) {
       pawn.addEventListener("click", pawnClickHandler);
@@ -142,62 +200,60 @@ function pawnEvent() {
     }
   });
 }
-function pawnClickHandler(event) {
-  rclickEventListener();
-  console.log("You click on pawn on ", event.target, " square");
-  let pawn = event.target;
-  let parentId = pawn.parentElement.getAttribute("id");
-  let direction = currentPlayer === "white" ? -1 : 1;
-  let id1 = parentId.charAt(0) + (parseInt(parentId.charAt(1)) + direction);
-  let element1 = document.getElementById(id1);
-  console.log(element1.hasChildNodes()? ("has child nodes" , element1) : "no child nodes");
 
-  if (!element1.hasChildNodes() || !element1.querySelector("img")) {
-    element1.classList.add("mayMove");
-    let moveHandler = () => move(element1, pawn);
-    element1.addEventListener("click", moveHandler);
-    clickEventListener.push({ element: element1, event: "click", handler: moveHandler });
+
+
+//All rooks events
+function rookEvent() {
+  // console.log("Running rookEvent for", currentPlayer, " rook");
+  let allRooks = document.querySelectorAll("img[src*='rook']");
+  const rookClickHandler = function(event) {
+    rclickEventListener();
+    const checkAndAddSquares = (parentId, xOffset, yOffset) => {
+      let row = parseInt(parentId.charAt(1)) + yOffset;
+      let col = parentId.charCodeAt(0) + xOffset;
+      while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
+        const id = String.fromCharCode(col) + row;
+        const square = document.getElementById(id);
+  
+        if (!square.hasChildNodes() || !square.querySelector("img")) {
+          square.classList.add("mayMove");
+          let moveHandler = () => move(square, rook);
+          square.addEventListener("click", moveHandler);
+          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+        }
+        else {
+          if (square.querySelector("img").src.includes(currentPlayer)) {
+            break;
+          } 
+          else {
+            square.classList.add("mayCut");
+            let moveHandler = () => move(square, rook);
+            square.addEventListener("click", moveHandler);
+            clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+            break;
+          }
+        }
+  
+        row += yOffset;
+        col += xOffset;
+      }
+    };
+    let rook = event.target;
+    let parentId = rook.parentElement.getAttribute("id");
+  
+    checkAndAddSquares(parentId, 1, 0);
+    checkAndAddSquares(parentId, 0, 1);
+    checkAndAddSquares(parentId, -1, 0);
+    checkAndAddSquares(parentId, 0, -1);
   }
-
-  if (
-    ((parseInt(parentId.charAt(1)) === 2 && currentPlayer == "black") ||
-      (parseInt(parentId.charAt(1)) === 7 && currentPlayer == "white")
-    )) {
-    let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
-    let element2 = document.getElementById(id2);
-    if (!element2.hasChildNodes()  || !element2.querySelector("img")) {
-      // console.log("can move ahead ", element2);
-      element2.classList.add("mayMove");
-      let moveHandler = () => move(element2, pawn);
-      element2.addEventListener("click", moveHandler);
-      clickEventListener.push({ element: element2, event: "click", handler: moveHandler });
+  allRooks.forEach((rook) => {
+    if (rook.src.includes(currentPlayer)) {
+      console.log("add click event on rook", rook);
+      rook.addEventListener("click", rookClickHandler);
+      runningEventListener.push({ element: rook, event: "click", handler: rookClickHandler });
     }
-  }
-
-  let leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1.charAt(1);
-  let rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1.charAt(1);
-  let leftSquare = document.getElementById(leftSquareId);
-  let rightSquare = document.getElementById(rightSquareId);
-  // console.log("leftSquareId", leftSquareId);
-  // console.log("rightSquareId", rightSquareId);
-  // console.log("leftSquare", leftSquare);
-  // console.log("rightSquare", rightSquare);
-
-  if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer)) {
-    console.log("can cut ", leftSquare);
-    leftSquare.classList.add("mayCut");
-    let moveHandler = () => move(leftSquare, pawn);
-    leftSquare.addEventListener("click", moveHandler);
-    clickEventListener.push({ element: leftSquare, event: "click", handler: moveHandler });
-  }
-
-  if (rightSquare && rightSquare.hasChildNodes() && !rightSquare.querySelector('img').src.includes(currentPlayer)) {
-    console.log("can cut ", rightSquare);
-    rightSquare.classList.add("mayCut");
-    let moveHandler = () => move(rightSquare, pawn);
-    rightSquare.addEventListener("click", moveHandler);
-    clickEventListener.push({ element: rightSquare, event: "click", handler: moveHandler });
-  }
+  });
 }
 
 
