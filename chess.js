@@ -38,6 +38,15 @@ function removeAllEventListeners() {
   runningEventListener = [];
 }
 
+// function removeSpecificEventListener(ele) {
+//   // console.log("removeSpecificEventListener");
+//   for (let { element ,event, handler } of runningEventListener) {
+//     if(element === ele)
+//     ele.removeEventListener(event, handler);
+//   }
+//   runningEventListener = runningEventListener.filter((x) => x.element !== element);
+// }
+
 //remove click listener
 function rclickEventListener() {
   // console.log("rclickEventListener");
@@ -93,7 +102,7 @@ function allYellowUI() {
           document.getElementById(idOfElement).style.backgroundColor = "yellow";
           clickedElement.push(x);
         } else {
-          alert("Not your turn");
+          console.log("Not your turn");
         }
       }
     }
@@ -114,12 +123,11 @@ function move(square, peice) {
     square.classList.remove("mayCut");
     square.querySelector('img').remove();
     square.appendChild(peice);
-    changePlayer();
   }
   else {
     square.appendChild(peice);
-    changePlayer();
   }
+  changePlayer();
 };
 
 
@@ -142,9 +150,9 @@ function pawnClickHandler(event) {
   let direction = currentPlayer === "white" ? -1 : 1;
   let id1 = parentId.charAt(0) + (parseInt(parentId.charAt(1)) + direction);
   let element1 = document.getElementById(id1);
+  console.log(element1.hasChildNodes()? ("has child nodes" , element1) : "no child nodes");
 
-  if (!element1.hasChildNodes()) {
-    // console.log("can move ahead ", element1);
+  if (!element1.hasChildNodes() || !element1.querySelector("img")) {
     element1.classList.add("mayMove");
     let moveHandler = () => move(element1, pawn);
     element1.addEventListener("click", moveHandler);
@@ -157,7 +165,7 @@ function pawnClickHandler(event) {
     )) {
     let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
     let element2 = document.getElementById(id2);
-    if (!element2.hasChildNodes()) {
+    if (!element2.hasChildNodes()  || !element2.querySelector("img")) {
       // console.log("can move ahead ", element2);
       element2.classList.add("mayMove");
       let moveHandler = () => move(element2, pawn);
