@@ -75,10 +75,10 @@ function reset() {
 // UI for all yellow background squares
 let clickedElement = [];
 function allYellowUI() {
-  console.log("allYellowUI");
+  // console.log("allYellowUI");
   const allSquares = document.querySelectorAll(".square");
   for (let x of allSquares) {
-    console.log("adding event listener to ", x);
+    // console.log("adding event listener to ", x);
     let adding = function () {
       const idOfElement = x.getAttribute("id");
       const innerHtmlOfElement = document.getElementById(idOfElement).innerHTML;
@@ -144,7 +144,7 @@ function pawnClickHandler(event) {
   let element1 = document.getElementById(id1);
 
   if (!element1.hasChildNodes()) {
-    console.log("can move ahead ", element1);
+    // console.log("can move ahead ", element1);
     element1.classList.add("mayMove");
     let moveHandler = () => move(element1, pawn);
     element1.addEventListener("click", moveHandler);
@@ -158,7 +158,7 @@ function pawnClickHandler(event) {
     let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
     let element2 = document.getElementById(id2);
     if (!element2.hasChildNodes()) {
-      console.log("can move ahead ", element2);
+      // console.log("can move ahead ", element2);
       element2.classList.add("mayMove");
       let moveHandler = () => move(element2, pawn);
       element2.addEventListener("click", moveHandler);
@@ -166,10 +166,14 @@ function pawnClickHandler(event) {
     }
   }
 
-  let leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1;
-  let rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1;
+  let leftSquareId = String.fromCharCode(parentId.charCodeAt(0) - 1) + id1.charAt(1);
+  let rightSquareId = String.fromCharCode(parentId.charCodeAt(0) + 1) + id1.charAt(1);
   let leftSquare = document.getElementById(leftSquareId);
   let rightSquare = document.getElementById(rightSquareId);
+  // console.log("leftSquareId", leftSquareId);
+  // console.log("rightSquareId", rightSquareId);
+  // console.log("leftSquare", leftSquare);
+  // console.log("rightSquare", rightSquare);
 
   if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer)) {
     console.log("can cut ", leftSquare);
