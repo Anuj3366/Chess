@@ -12,12 +12,19 @@ let blackCheck = false;
 rExcuteAllEvents();
 
 //anouncement hover event
+currentPlayerAnnounce.style.transition = "all 0.3s ease-in-out";
 currentPlayerAnnounce.addEventListener("mouseover", () => {
-  currentPlayerAnnounce.style.backgroundColor = "gold";
+  currentPlayerAnnounce.style.boxShadow = "0px 0px 10px 2px gold"; 
+  currentPlayerAnnounce.style.transform = "scale(1.1)"; 
+  currentPlayerAnnounce.style.textShadow = "0px 0px 5px gold"; 
 });
+
 currentPlayerAnnounce.addEventListener("mouseout", () => {
-  currentPlayerAnnounce.style.backgroundColor = "initial";
+  currentPlayerAnnounce.style.boxShadow = "none";
+  currentPlayerAnnounce.style.transform = "scale(1)";
+  currentPlayerAnnounce.style.textShadow = "none";
 });
+
 
 //change player and rerun all events again and remove all event listeners
 function changePlayer() {
@@ -165,7 +172,7 @@ function move(square, peice) {
     square.querySelector('img').remove();
     square.appendChild(peice);
     changeCapturedPiecesStack();
-  }  
+  }
   else {
     square.appendChild(peice);
   }
@@ -432,8 +439,8 @@ function kingEvent() {
 
       const id = String.fromCharCode(col) + row;
       const square = document.getElementById(id);
-      // console.log("id:square", id,":" ,square);s
-      if ((row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0))) {
+      // console.log("id:square", id,":" ,square);
+      if ((row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) && !checkSystem(id)) {
         if (!square.hasChildNodes() || !square.querySelector("img")) {
           square.classList.add("mayMove");
           let moveHandler = () => move(square, king);
@@ -458,7 +465,10 @@ function kingEvent() {
   }
 
   bothKings.forEach((king) => {
-    if (king.src.includes(currentPlayer) && checkSystem(king)) {
+    if (king.src.includes(currentPlayer)) {
+      if (checkSystem(king.parentElement.getAttribute("id"))) {
+        console.log("check ha bhai , save your king");
+      }
       // console.log("add click event on king", king);
       king.addEventListener("click", kingClickHandler);
       runningEventListener.push({ element: king, event: "click", handler: kingClickHandler });
@@ -467,61 +477,62 @@ function kingEvent() {
 }
 
 function checkSystem(king) {
-  rclickEventListener();
   // console.log("running checkSystem function")
-  let parentId = king.parentElement.getAttribute("id");
-  const checkAndAddSquares = (parentId, xOffset, yOffset, find) => {
+  let parentId = king;
+  const checking = (parentId, xOffset, yOffset, find) => {
     let row = parseInt(parentId.charAt(1)) + yOffset;
     let col = parentId.charCodeAt(0) + xOffset;
 
     while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
       const id = String.fromCharCode(col) + row;
       const square = document.getElementById(id);
-      if (square.querySelector("img").src.includes(find)) {
-        return false;
+      if ((square.hasChildNodes() && square.querySelector("img")) && square.querySelector("img").src.includes(find) && !square.querySelector("img").src.includes(currentPlayer)) {
+        return true;
       }
-      else if (square.querySelector("img") || square.hasChildNodes() || find == "knight" || find == "pawn"){
+      else if ((square.querySelector("img") && square.hasChildNodes()) || find === "knight" || find === "pawn") {
         break;
       }
 
       row += yOffset;
       col += xOffset;
     }
-    return true;
+    return false;
   };
-  let check = true;
+  let check = false;
+  
   // console.log("check before rook done",check)
-  check = check || checkAndAddSquares(parentId, 1, 0, "rook");
-  check = check || checkAndAddSquares(parentId, -1, 0, "rook");
-  check = check || checkAndAddSquares(parentId, 0, 1, "rook");
-  check = check || checkAndAddSquares(parentId, 0, -1, "rook");
-  // console.log("check after rook done",check);
-  check = check || checkAndAddSquares(parentId, 1, 1, "bishop");
-  check = check || checkAndAddSquares(parentId, 1, -1, "bishop");
-  check = check || checkAndAddSquares(parentId, -1, 1, "bishop");
-  check = check || checkAndAddSquares(parentId, -1, -1, "bishop");
-  // console.log("check after bishop done",check);
-  check = check || checkAndAddSquares(parentId, 2, 1, "knight");
-  check = check || checkAndAddSquares(parentId, -2, 1, "knight");
-  check = check || checkAndAddSquares(parentId, 1, 2, "knight");
-  check = check || checkAndAddSquares(parentId, 1, -2, "knight");
-  check = check || checkAndAddSquares(parentId, 2, -1, "knight");
-  check = check || checkAndAddSquares(parentId, -2, -1, "knight");
-  check = check || checkAndAddSquares(parentId, -1, 2, "knight");
-  check = check || checkAndAddSquares(parentId, -1, -2, "knight");
+  
+  check = check || checking(parentId, 1, 0, "rook");
+  check = check || checking(parentId, -1, 0, "rook");
+  check = check || checking(parentId, 0, 1, "rook");
+  check = check || checking(parentId, 0, -1, "rook");
+  // console.log("check after rook done",check);.
+  check = check || checking(parentId, 1, 1, "bishop");
+  check = check || checking(parentId, -1, -1, "bishop");
+  check = check || checking(parentId, -1, 1, "bishop");
+  check = check || checking(parentId, 1, -1, "bishop");
+  // console.log("check after bishop done", check);
+  check = check || checking(parentId, 2, 1, "knight");
+  check = check || checking(parentId, -2, 1, "knight");
+  check = check || checking(parentId, 1, 2, "knight");
+  check = check || checking(parentId, 1, -2, "knight");
+  check = check || checking(parentId, 2, -1, "knight");
+  check = check || checking(parentId, -2, -1, "knight");
+  check = check || checking(parentId, -1, 2, "knight");
+  check = check || checking(parentId, -1, -2, "knight");
   // console.log("check after knight done",check);
-  check = check || checkAndAddSquares(parentId, 1, 0, "queen");
-  check = check || checkAndAddSquares(parentId, -1, 0, "queen");
-  check = check || checkAndAddSquares(parentId, 0, 1, "queen");
-  check = check || checkAndAddSquares(parentId, 0, -1, "queen");
-  check = check || checkAndAddSquares(parentId, 1, 1, "queen");
-  check = check || checkAndAddSquares(parentId, 1, -1, "queen");
-  check = check || checkAndAddSquares(parentId, -1, 1, "queen");
-  check = check || checkAndAddSquares(parentId, -1, -1, "queen");
+  check = check || checking(parentId, 1, 0, "queen");
+  check = check || checking(parentId, -1, 0, "queen");
+  check = check || checking(parentId, 0, 1, "queen");
+  check = check || checking(parentId, 0, -1, "queen");
+  check = check || checking(parentId, 1, 1, "queen");
+  check = check || checking(parentId, 1, -1, "queen");
+  check = check || checking(parentId, -1, 1, "queen");
+  check = check || checking(parentId, -1, -1, "queen");
   // console.log("check after queen done",check);
-  check = check || checkAndAddSquares(parentId, 1, 1,"pawn");
-  check = check || checkAndAddSquares(parentId, -1, -1,"pawn");
+  // check = check || checking(parentId, 1, 1,"pawn");
+  // check = check || checking(parentId, -1, -1,"pawn");
   // console.log("check after pawn done",check);
-  console.log("returning check value")
+  console.log("returning check value",check);
   return check;
 }
