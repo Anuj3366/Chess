@@ -1,4 +1,4 @@
-//problem , moving after check , some illegal move of king(moving left if has check in that line) , castle,En Passant pawn move , no winning check and no stalemate check
+//problem , moving after check , some illegal move of king(moving left if has check in that line) , castle,En Passant pawn move , no winning check and no stalemate check , pawn morf,no break if king btw
 mapping();
 let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
@@ -12,12 +12,21 @@ let whiteCheck = false;
 let blackCheck = false;
 rExcuteAllEvents();
 
+//UI
+function toggleStack() {
+  const stackElements = document.getElementsByClassName("stack");
+  stackElements[0].classList.toggle("stackToggle");
+  stackElements[1].classList.toggle("stackToggle");
+}
+
+
+
 //anouncement hover event
 currentPlayerAnnounce.style.transition = "all 0.3s ease-in-out";
 currentPlayerAnnounce.addEventListener("mouseover", () => {
-  currentPlayerAnnounce.style.boxShadow = "0px 0px 10px 2px gold"; 
-  currentPlayerAnnounce.style.transform = "scale(1.1)"; 
-  currentPlayerAnnounce.style.textShadow = "0px 0px 5px gold"; 
+  currentPlayerAnnounce.style.boxShadow = "0px 0px 10px 2px gold";
+  currentPlayerAnnounce.style.transform = "scale(1.1)";
+  currentPlayerAnnounce.style.textShadow = "0px 0px 5px gold";
 });
 
 currentPlayerAnnounce.addEventListener("mouseout", () => {
@@ -266,7 +275,7 @@ const checkAndAddSquares = (parentId, xOffset, yOffset, piece) => {
     } else {
       if (square.querySelector("img").src.includes(currentPlayer)) {
         break;
-      } else if(!square.querySelector("img").src.includes("king")){
+      } else if (!square.querySelector("img").src.includes("king")) {
         square.classList.add("mayCut");
         let moveHandler = () => move(square, piece);
         square.addEventListener("click", moveHandler);
@@ -498,9 +507,9 @@ function checkSystem(king) {
     return false;
   };
   let check = false;
-  
+
   // console.log("check before rook done",check)
-  
+
   check = check || checking(parentId, 1, 0, "rook");
   check = check || checking(parentId, -1, 0, "rook");
   check = check || checking(parentId, 0, 1, "rook");

@@ -11,10 +11,15 @@
 
 <body>
   <div class="container">
-    <div id="blackCapturedPiecesStack" class="stack"></div>
+    <div id="blackCapturedPiecesStack" class="stack stack-hidden"></div>
     <div class="after-container">
       <div id="currentPlayer_Announce">
         <span id="displayPlayer"></span> Player's Turn
+      </div>
+
+      <div class="button">
+        <button class="stack-button" onclick="toggleStack()">Show Captured Pieces</button>
+        <button onclick="reset()">Reset</button>
       </div>
       <div class="main-container">
         <div class="file-a files">
@@ -163,10 +168,9 @@
         </div>
       </div>
       <div>
-        <button onclick="reset()">Reset</button>
       </div>
     </div>
-    <div id="whiteCapturedPiecesStack" class="stack"></div>
+    <div id="whiteCapturedPiecesStack" class="stack stack-hidden"></div>
   </div>
 </body>
 
