@@ -3,34 +3,66 @@ let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
 let runningEventListener = [];
 let clickEventListener = [];
+const currentPlayerAnnounce = document.getElementById("currentPlayer_Announce");
 displayPlayer.innerHTML = currentPlayer;
+let whiteCapturedPieces = [];
+let blackCapturedPieces = [];
+let whiteCheck = false;
+let blackCheck = false;
 rExcuteAllEvents();
 
+//anouncement hover event
+currentPlayerAnnounce.addEventListener("mouseover", () => {
+  currentPlayerAnnounce.style.backgroundColor = "gold";
+});
+currentPlayerAnnounce.addEventListener("mouseout", () => {
+  currentPlayerAnnounce.style.backgroundColor = "initial";
+});
 
 //change player and rerun all events again and remove all event listeners
 function changePlayer() {
-  // console.log("change player");
+  currentPlayerAnnounce.style.color = currentPlayer;
   if (currentPlayer === "white") {
     currentPlayer = "black";
-  }
-  else {
+    currentPlayerAnnounce.style.backgroundColor = "black";
+  } else {
     currentPlayer = "white";
+    currentPlayerAnnounce.style.backgroundColor = "white";
   }
   rExcuteAllEvents();
   displayPlayer.innerHTML = currentPlayer;
 }
 
+//change captured pieces stack
+function changeCapturedPiecesStack() {
+  let whiteCapturedPiecesStack = document.getElementById("whiteCapturedPiecesStack");
+  let blackCapturedPiecesStack = document.getElementById("blackCapturedPiecesStack");
+  // console.log("no problem before rendering");
+  for (let piece of whiteCapturedPieces) {
+    whiteCapturedPiecesStack.appendChild(piece);
+  }
+  for (let piece of blackCapturedPieces) {
+    blackCapturedPiecesStack.appendChild(piece);
+  }
+  // console.log("no problem after rendering");
+  whiteCapturedPieces = [];
+  blackCapturedPieces = [];
+}
+
+
+
 //excute all events again
 function rExcuteAllEvents() {
-  // console.log("rExcuteAllEvents");
   removeAllEventListeners();
   rclickEventListener();
+  allYellowUI();
   pawnEvent();
   rookEvent();
   knightEvent();
   bishopEvent();
   queenEvent();
-  allYellowUI();
+  kingEvent();//problem
+  // console.log("All functions reexecuted");
 }
 
 //remove all event Listeners
@@ -110,28 +142,35 @@ function allYellowUI() {
         }
       }
     }
-
     x.addEventListener("click", adding);
     runningEventListener.push({ element: x, event: "click", handler: adding });
   }
 }
 
-
 //move and cut functions
 function move(square, peice) {
   // console.log("used rclickEventListener to check if its really removing")
-  rclickEventListener();
   // console.log("moving from ", peice.parentElement, " to ", square)
+  rclickEventListener();
   if (square.querySelector('img')) {
+    // debugger;
     square.classList.remove("mayMove");
     square.classList.remove("mayCut");
+    const pieceColor = square.children[0].src.includes("white") ? "white" : "black";
+    if (pieceColor === "white") {
+      whiteCapturedPieces.push(square.children[0]);
+    } else {
+      blackCapturedPieces.push(square.children[0]);
+    }
     square.querySelector('img').remove();
     square.appendChild(peice);
-  }
+    changeCapturedPiecesStack();
+  }  
   else {
     square.appendChild(peice);
   }
   changePlayer();
+  // console.log("hi there changeCapturedPiecesStack is exiting");
 };
 
 
@@ -204,49 +243,50 @@ function pawnEvent() {
   });
 }
 
+//common in rook and bishop and queen
+const checkAndAddSquares = (parentId, xOffset, yOffset, piece) => {
+  let row = parseInt(parentId.charAt(1)) + yOffset;
+  let col = parentId.charCodeAt(0) + xOffset;
+
+  while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
+    const id = String.fromCharCode(col) + row;
+    const square = document.getElementById(id);
+
+    if (!square.hasChildNodes() || !square.querySelector("img")) {
+      square.classList.add("mayMove");
+      let moveHandler = () => move(square, piece);
+      square.addEventListener("click", moveHandler);
+      clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+    } else {
+      if (square.querySelector("img").src.includes(currentPlayer)) {
+        break;
+      } else {
+        square.classList.add("mayCut");
+        let moveHandler = () => move(square, piece);
+        square.addEventListener("click", moveHandler);
+        clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+        break;
+      }
+    }
+
+    row += yOffset;
+    col += xOffset;
+  }
+};
+
+
 //All rooks events
 function rookEvent() {
   // console.log("Running rookEvent for", currentPlayer, " rook");
   let allRooks = document.querySelectorAll("img[src*='rook']");
   const rookClickHandler = function (event) {
     rclickEventListener();
-    const checkAndAddSquares = (parentId, xOffset, yOffset) => {
-      let row = parseInt(parentId.charAt(1)) + yOffset;
-      let col = parentId.charCodeAt(0) + xOffset;
-      while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
-        const id = String.fromCharCode(col) + row;
-        const square = document.getElementById(id);
-
-        if (!square.hasChildNodes() || !square.querySelector("img")) {
-          square.classList.add("mayMove");
-          let moveHandler = () => move(square, rook);
-          square.addEventListener("click", moveHandler);
-          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-        }
-        else {
-          if (square.querySelector("img").src.includes(currentPlayer)) {
-            break;
-          }
-          else {
-            square.classList.add("mayCut");
-            let moveHandler = () => move(square, rook);
-            square.addEventListener("click", moveHandler);
-            clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-            break;
-          }
-        }
-
-        row += yOffset;
-        col += xOffset;
-      }
-    };
     let rook = event.target;
     let parentId = rook.parentElement.getAttribute("id");
-
-    checkAndAddSquares(parentId, 1, 0);
-    checkAndAddSquares(parentId, 0, 1);
-    checkAndAddSquares(parentId, -1, 0);
-    checkAndAddSquares(parentId, 0, -1);
+    checkAndAddSquares(parentId, 1, 0, rook);
+    checkAndAddSquares(parentId, 0, 1, rook);
+    checkAndAddSquares(parentId, -1, 0, rook);
+    checkAndAddSquares(parentId, 0, -1, rook);
   }
   allRooks.forEach((rook) => {
     if (rook.src.includes(currentPlayer)) {
@@ -319,7 +359,7 @@ function knightEvent() {
 
   allKnight.forEach((knight) => {
     if (knight.src.includes(currentPlayer)) {
-      console.log("add click event on knight", knight);
+      // console.log("add click event on knight", knight);
       knight.addEventListener("click", knightClickHandler);
       runningEventListener.push({ element: knight, event: "click", handler: knightClickHandler });
     }
@@ -332,44 +372,14 @@ function bishopEvent() {
 
   const bishopClickHandler = function (event) {
     rclickEventListener();
-    const checkAndAddSquares = (parentId, xDirection, yDirection) => {
-      let row = parseInt(parentId.charAt(1)) + yDirection;
-      let col = parentId.charCodeAt(0) + xDirection;
-      while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
-        const id = String.fromCharCode(col) + row;
-        const square = document.getElementById(id);
-
-        if (!square.hasChildNodes() || !square.querySelector("img")) {
-          square.classList.add("mayMove");
-          let moveHandler = () => move(square, bishop);
-          square.addEventListener("click", moveHandler);
-          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-        }
-        else {
-          if (square.querySelector("img").src.includes(currentPlayer)) {
-            break;
-          }
-          else {
-            square.classList.add("mayCut");
-            let moveHandler = () => move(square, bishop);
-            square.addEventListener("click", moveHandler);
-            clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-            break;
-          }
-        }
-
-        row += yDirection;
-        col += xDirection;
-      }
-    };
 
     let bishop = event.target;
     let parentId = bishop.parentElement.getAttribute("id");
 
-    checkAndAddSquares(parentId, 1, 1);
-    checkAndAddSquares(parentId, 1, -1);
-    checkAndAddSquares(parentId, -1, 1);
-    checkAndAddSquares(parentId, -1, -1);
+    checkAndAddSquares(parentId, 1, 1, bishop);
+    checkAndAddSquares(parentId, 1, -1, bishop);
+    checkAndAddSquares(parentId, -1, 1, bishop);
+    checkAndAddSquares(parentId, -1, -1, bishop);
   }
 
   allBishops.forEach((bishop) => {
@@ -387,49 +397,16 @@ function queenEvent() {
 
   const queenClickHandler = function (event) {
     rclickEventListener();
-
-    const checkAndAddSquares = (parentId, xDirection, yDirection) => {
-      let row = parseInt(parentId.charAt(1)) + yDirection;
-      let col = parentId.charCodeAt(0) + xDirection;
-      while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
-        const id = String.fromCharCode(col) + row;
-        const square = document.getElementById(id);
-
-        if (!square.hasChildNodes() || !square.querySelector("img")) {
-          square.classList.add("mayMove");
-          let moveHandler = () => move(square, queen);
-          square.addEventListener("click", moveHandler);
-          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-        }
-        else {
-          if (square.querySelector("img").src.includes(currentPlayer)) {
-            break;
-          }
-          else {
-            square.classList.add("mayCut");
-            let moveHandler = () => move(square, queen);
-            square.addEventListener("click", moveHandler);
-            clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-            break;
-          }
-        }
-
-        row += yDirection;
-        col += xDirection;
-      }
-    };
-
     let queen = event.target;
     let parentId = queen.parentElement.getAttribute("id");
-
-    checkAndAddSquares(parentId, 1, 0);
-    checkAndAddSquares(parentId, 0, 1);
-    checkAndAddSquares(parentId, -1, 0);
-    checkAndAddSquares(parentId, 0, -1);
-    checkAndAddSquares(parentId, 1, 1);
-    checkAndAddSquares(parentId, 1, -1);
-    checkAndAddSquares(parentId, -1, 1);
-    checkAndAddSquares(parentId, -1, -1);
+    checkAndAddSquares(parentId, 1, 0, queen);
+    checkAndAddSquares(parentId, 0, 1, queen);
+    checkAndAddSquares(parentId, -1, 0, queen);
+    checkAndAddSquares(parentId, 0, -1, queen);
+    checkAndAddSquares(parentId, 1, 1, queen);
+    checkAndAddSquares(parentId, 1, -1, queen);
+    checkAndAddSquares(parentId, -1, 1, queen);
+    checkAndAddSquares(parentId, -1, -1, queen);
   }
 
   allQueens.forEach((queen) => {
@@ -441,7 +418,110 @@ function queenEvent() {
   });
 }
 
+//king events
+function kingEvent() {
+  let bothKings = document.querySelectorAll("img[src*='king']");
 
+  const kingClickHandler = function (event) {
+    rclickEventListener();
+    let king = event.target;
+    let parentId = king.parentElement.getAttribute("id");
+    const checkAndAddSquares = (parentId, xOffset, yOffset) => {
+      let row = parseInt(parentId.charAt(1)) + yOffset;
+      let col = parentId.charCodeAt(0) + xOffset;
 
+      const id = String.fromCharCode(col) + row;
+      const square = document.getElementById(id);
+      // console.log("id:square", id,":" ,square);s
+      if ((row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0))) {
+        if (!square.hasChildNodes() || !square.querySelector("img")) {
+          square.classList.add("mayMove");
+          let moveHandler = () => move(square, king);
+          square.addEventListener("click", moveHandler);
+          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+        } else if (!square.querySelector("img").src.includes(currentPlayer)) {
+          square.classList.add("mayCut");
+          let moveHandler = () => move(square, king);
+          square.addEventListener("click", moveHandler);
+          clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+        }
+      }
+    };
+    checkAndAddSquares(parentId, 1, 0);
+    checkAndAddSquares(parentId, -1, 0);
+    checkAndAddSquares(parentId, 0, 1);
+    checkAndAddSquares(parentId, 0, -1);
+    checkAndAddSquares(parentId, 1, -1);
+    checkAndAddSquares(parentId, -1, 1);
+    checkAndAddSquares(parentId, 1, 1);
+    checkAndAddSquares(parentId, -1, -1);
+  }
 
+  bothKings.forEach((king) => {
+    if (king.src.includes(currentPlayer) && checkSystem(king)) {
+      // console.log("add click event on king", king);
+      king.addEventListener("click", kingClickHandler);
+      runningEventListener.push({ element: king, event: "click", handler: kingClickHandler });
+    }
+  });
+}
 
+function checkSystem(king) {
+  rclickEventListener();
+  // console.log("running checkSystem function")
+  let parentId = king.parentElement.getAttribute("id");
+  const checkAndAddSquares = (parentId, xOffset, yOffset, find) => {
+    let row = parseInt(parentId.charAt(1)) + yOffset;
+    let col = parentId.charCodeAt(0) + xOffset;
+
+    while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
+      const id = String.fromCharCode(col) + row;
+      const square = document.getElementById(id);
+      if (square.querySelector("img").src.includes(find)) {
+        return false;
+      }
+      else if (square.querySelector("img") || square.hasChildNodes() || find == "knight" || find == "pawn"){
+        break;
+      }
+
+      row += yOffset;
+      col += xOffset;
+    }
+    return true;
+  };
+  let check = true;
+  // console.log("check before rook done",check)
+  check = check || checkAndAddSquares(parentId, 1, 0, "rook");
+  check = check || checkAndAddSquares(parentId, -1, 0, "rook");
+  check = check || checkAndAddSquares(parentId, 0, 1, "rook");
+  check = check || checkAndAddSquares(parentId, 0, -1, "rook");
+  // console.log("check after rook done",check);
+  check = check || checkAndAddSquares(parentId, 1, 1, "bishop");
+  check = check || checkAndAddSquares(parentId, 1, -1, "bishop");
+  check = check || checkAndAddSquares(parentId, -1, 1, "bishop");
+  check = check || checkAndAddSquares(parentId, -1, -1, "bishop");
+  // console.log("check after bishop done",check);
+  check = check || checkAndAddSquares(parentId, 2, 1, "knight");
+  check = check || checkAndAddSquares(parentId, -2, 1, "knight");
+  check = check || checkAndAddSquares(parentId, 1, 2, "knight");
+  check = check || checkAndAddSquares(parentId, 1, -2, "knight");
+  check = check || checkAndAddSquares(parentId, 2, -1, "knight");
+  check = check || checkAndAddSquares(parentId, -2, -1, "knight");
+  check = check || checkAndAddSquares(parentId, -1, 2, "knight");
+  check = check || checkAndAddSquares(parentId, -1, -2, "knight");
+  // console.log("check after knight done",check);
+  check = check || checkAndAddSquares(parentId, 1, 0, "queen");
+  check = check || checkAndAddSquares(parentId, -1, 0, "queen");
+  check = check || checkAndAddSquares(parentId, 0, 1, "queen");
+  check = check || checkAndAddSquares(parentId, 0, -1, "queen");
+  check = check || checkAndAddSquares(parentId, 1, 1, "queen");
+  check = check || checkAndAddSquares(parentId, 1, -1, "queen");
+  check = check || checkAndAddSquares(parentId, -1, 1, "queen");
+  check = check || checkAndAddSquares(parentId, -1, -1, "queen");
+  // console.log("check after queen done",check);
+  check = check || checkAndAddSquares(parentId, 1, 1,"pawn");
+  check = check || checkAndAddSquares(parentId, -1, -1,"pawn");
+  // console.log("check after pawn done",check);
+  console.log("returning check value")
+  return check;
+}
