@@ -1,3 +1,4 @@
+//problem , moving after check , some illegal move of king(moving left if has check in that line) , castle,En Passant pawn move , no winning check and no stalemate check
 mapping();
 let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
@@ -56,8 +57,6 @@ function changeCapturedPiecesStack() {
   blackCapturedPieces = [];
 }
 
-
-
 //excute all events again
 function rExcuteAllEvents() {
   removeAllEventListeners();
@@ -68,7 +67,7 @@ function rExcuteAllEvents() {
   knightEvent();
   bishopEvent();
   queenEvent();
-  kingEvent();//problem
+  kingEvent();
   // console.log("All functions reexecuted");
 }
 
@@ -208,7 +207,7 @@ function pawnEvent() {
       )) {
       let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
       let element2 = document.getElementById(id2);
-      if (!element2.hasChildNodes() || !element2.querySelector("img")) {
+      if (!element2.hasChildNodes() || !element2.querySelector("img") && (!element1.hasChildNodes() || !element1.querySelector("img"))) {
         // console.log("can move ahead ", element2);
         element2.classList.add("mayMove");
         let moveHandler = () => move(element2, pawn);
@@ -226,7 +225,7 @@ function pawnEvent() {
     // console.log("leftSquare", leftSquare);
     // console.log("rightSquare", rightSquare);
 
-    if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer)) {
+    if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer) && !leftSquare.querySelector('img').src.includes("king")) {
       // console.log("can cut ", leftSquare);
       leftSquare.classList.add("mayCut");
       let moveHandler = () => move(leftSquare, pawn);
@@ -234,7 +233,7 @@ function pawnEvent() {
       clickEventListener.push({ element: leftSquare, event: "click", handler: moveHandler });
     }
 
-    if (rightSquare && rightSquare.hasChildNodes() && !rightSquare.querySelector('img').src.includes(currentPlayer)) {
+    if (rightSquare && rightSquare.hasChildNodes() && !rightSquare.querySelector('img').src.includes(currentPlayer) && !rightSquare.querySelector('img').src.includes("king")) {
       // console.log("can cut ", rightSquare);
       rightSquare.classList.add("mayCut");
       let moveHandler = () => move(rightSquare, pawn);
@@ -267,7 +266,7 @@ const checkAndAddSquares = (parentId, xOffset, yOffset, piece) => {
     } else {
       if (square.querySelector("img").src.includes(currentPlayer)) {
         break;
-      } else {
+      } else if(!square.querySelector("img").src.includes("king")){
         square.classList.add("mayCut");
         let moveHandler = () => move(square, piece);
         square.addEventListener("click", moveHandler);
@@ -324,7 +323,7 @@ function knightEvent() {
           clickEventListener.push({ element: square, event: "click", handler: moveHandler });
         }
         else {
-          if (!square.querySelector("img").src.includes(currentPlayer)) {
+          if (!square.querySelector("img").src.includes(currentPlayer) && !square.querySelector("img").src.includes("king")) {
             square.classList.add("mayCut");
             let moveHandler = () => move(square, knight);
             square.addEventListener("click", moveHandler);
@@ -446,7 +445,7 @@ function kingEvent() {
           let moveHandler = () => move(square, king);
           square.addEventListener("click", moveHandler);
           clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-        } else if (!square.querySelector("img").src.includes(currentPlayer)) {
+        } else if (!square.querySelector("img").src.includes(currentPlayer) && !square.querySelector("img").src.includes("king")) {
           square.classList.add("mayCut");
           let moveHandler = () => move(square, king);
           square.addEventListener("click", moveHandler);
@@ -533,6 +532,6 @@ function checkSystem(king) {
   // check = check || checking(parentId, 1, 1,"pawn");
   // check = check || checking(parentId, -1, -1,"pawn");
   // console.log("check after pawn done",check);
-  console.log("returning check value",check);
+  // console.log("returning check value",check);
   return check;
 }
