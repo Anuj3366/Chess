@@ -1,4 +1,4 @@
-//problem , moving after check , some illegal move of king(moving left if has check in that line) , castle,En Passant pawn move , no winning check and no stalemate check , pawn morf,no break if king btw
+//problem , moving after check , some illegal move of king(two king with each other) , castle,En Passant pawn move , no winning check and no stalemate check
 mapping();
 let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
@@ -128,7 +128,6 @@ function mapping() {
 //reload the page
 function reset() {
   // console.log("reset");
-  rExcuteAllEvents();
   location.reload();
 }
 
@@ -190,6 +189,26 @@ function move(square, peice) {
 
 
 //All pawns events
+const changePawnImage = function (id, newPiece, cp) {
+  let pawn = document.getElementById(id);
+  pawn.src = `./images/pieces/${cp}/${newPiece}.png`;
+  document.getElementById("pawnMorf").style.display = "none";
+  console.log("Morph to", newPiece, "done");
+  document.body.style.pointerEvents = "auto";
+};
+
+const pawnMorfEvent = function (pawn) {
+  let cp = currentPlayer;
+  let popup = document.getElementById("pawnMorf");
+  popup.innerHTML = `
+    <img src="./images/pieces/${cp}/rook.png" alt="" onclick="changePawnImage('${pawn}', 'rook', '${cp}')" />
+    <img src="./images/pieces/${cp}/knight.png" alt="" onclick="changePawnImage('${pawn}', 'knight', '${cp}')" />
+    <img src="./images/pieces/${cp}/bishop.png" alt="" onclick="changePawnImage('${pawn}', 'bishop', '${cp}')" />
+    <img src="./images/pieces/${cp}/queen.png" alt="" onclick="changePawnImage('${pawn}', 'queen', '${cp}')" />`;
+  popup.style.display = "flex";
+  document.body.style.pointerEvents = "none";
+  popup.style.pointerEvents = "auto";
+};
 function pawnEvent() {
   // console.log("Running pawnEvent for", currentPlayer, " pawns");
   let allPawns = document.querySelectorAll("img[src*='pawn']");
@@ -205,7 +224,13 @@ function pawnEvent() {
 
     if (!element1.hasChildNodes() || !element1.querySelector("img")) {
       element1.classList.add("mayMove");
-      let moveHandler = () => move(element1, pawn);
+      let moveHandler = () => {
+        if (element1.id.charAt(1) == 1 || element1.id.charAt(1) == 8) {
+          pawn.id = "pawnChange";
+          pawnMorfEvent(pawn.id);
+        }
+        move(element1, pawn);
+      };
       element1.addEventListener("click", moveHandler);
       clickEventListener.push({ element: element1, event: "click", handler: moveHandler });
     }
@@ -237,7 +262,13 @@ function pawnEvent() {
     if (leftSquare && leftSquare.hasChildNodes() && !leftSquare.querySelector('img').src.includes(currentPlayer) && !leftSquare.querySelector('img').src.includes("king")) {
       // console.log("can cut ", leftSquare);
       leftSquare.classList.add("mayCut");
-      let moveHandler = () => move(leftSquare, pawn);
+      let moveHandler = () => {
+        if (leftSquare.id.charAt(1) == 1 || leftSquare.id.charAt(1) == 8) {
+          pawn.id = "pawnChange";
+          pawnMorfEvent(pawn.id);
+        }
+        move(leftSquare, pawn);
+      };
       leftSquare.addEventListener("click", moveHandler);
       clickEventListener.push({ element: leftSquare, event: "click", handler: moveHandler });
     }
@@ -245,7 +276,13 @@ function pawnEvent() {
     if (rightSquare && rightSquare.hasChildNodes() && !rightSquare.querySelector('img').src.includes(currentPlayer) && !rightSquare.querySelector('img').src.includes("king")) {
       // console.log("can cut ", rightSquare);
       rightSquare.classList.add("mayCut");
-      let moveHandler = () => move(rightSquare, pawn);
+      let moveHandler = () => {
+        if (rightSquare.id.charAt(1) == 1 || rightSquare.id.charAt(1) == 8) {
+          pawn.id = "pawnChange";
+          pawnMorfEvent(pawn.id);
+        }
+        move(rightSquare, pawn);
+      };
       rightSquare.addEventListener("click", moveHandler);
       clickEventListener.push({ element: rightSquare, event: "click", handler: moveHandler });
     }
@@ -275,7 +312,11 @@ const checkAndAddSquares = (parentId, xOffset, yOffset, piece) => {
     } else {
       if (square.querySelector("img").src.includes(currentPlayer)) {
         break;
-      } else if (!square.querySelector("img").src.includes("king")) {
+      }
+      else if (square.querySelector("img").src.includes("king")) {
+        break;
+      }
+      else {
         square.classList.add("mayCut");
         let moveHandler = () => move(square, piece);
         square.addEventListener("click", moveHandler);
@@ -509,7 +550,7 @@ function checkSystem(king) {
   let check = false;
 
   // console.log("check before rook done",check)
-
+  let checks = 0;
   check = check || checking(parentId, 1, 0, "rook");
   check = check || checking(parentId, -1, 0, "rook");
   check = check || checking(parentId, 0, 1, "rook");
@@ -538,8 +579,9 @@ function checkSystem(king) {
   check = check || checking(parentId, -1, 1, "queen");
   check = check || checking(parentId, -1, -1, "queen");
   // console.log("check after queen done",check);
-  // check = check || checking(parentId, 1, 1,"pawn");
-  // check = check || checking(parentId, -1, -1,"pawn");
+  const direction = currentPlayer === "white" ? -1 : 1;
+  check = check || checking(parentId, direction, direction, "pawn");
+  check = check || checking(parentId, -direction, direction, "pawn");
   // console.log("check after pawn done",check);
   // console.log("returning check value",check);
   return check;
