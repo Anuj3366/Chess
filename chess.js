@@ -10,16 +10,17 @@ let whiteCapturedPieces = [];
 let blackCapturedPieces = [];
 let whiteCheck = false;
 let blackCheck = false;
-rExcuteAllEvents();
+let callingFunction = [];
 let moves = 0;//number of moves can move , if 0 and check then checkmate
+rExcuteAllEvents();
+
+
 //UI
 function toggleStack() {
   const stackElements = document.getElementsByClassName("stack");
   stackElements[0].classList.toggle("stackToggle");
   stackElements[1].classList.toggle("stackToggle");
 }
-
-
 
 //anouncement hover event
 currentPlayerAnnounce.style.transition = "all 0.3s ease-in-out";
@@ -39,7 +40,7 @@ currentPlayerAnnounce.addEventListener("mouseout", () => {
 //change player and rerun all events again and remove all event listeners
 function changePlayer() {
   currentPlayerAnnounce.style.color = currentPlayer;
-  // console.log("WoW there are ", moves, " moves and u chose this move");
+  console.log("WoW there are ", moves, " moves and u chose this move");
   if (currentPlayer === "white") {
     currentPlayer = "black";
     currentPlayerAnnounce.style.backgroundColor = "black";
@@ -79,6 +80,20 @@ function rExcuteAllEvents() {
   bishopEvent();
   queenEvent();
   kingEvent();
+  if (moves == 0) {
+    console.log("moves are 0");
+    if (currentPlayer === "white") {
+      whiteCheck = checkSystem(document.querySelector(`img[src*='white/king.png']`).parentElement.getAttribute("id", "king"));
+      if (whiteCheck) {
+        console.log("white is in check");
+      }
+    } else {
+      blackCheck = checkSystem(document.querySelector(`img[src*='black/king.png']`).parentElement.getAttribute("id", "king"));
+      if (blackCheck) {
+        console.log("black is in check");
+      }
+    }
+  }
   // console.log("All functions reexecuted");
 }
 
@@ -222,6 +237,7 @@ function pawnEvent() {
           pawn.id = "pawnChange";
           pawnMorfEvent(pawn.id);
         }
+        moves++;
         move(element1, pawn);
       };
       element1.addEventListener("click", moveHandler);
@@ -231,12 +247,13 @@ function pawnEvent() {
     if (
       ((parseInt(parentId.charAt(1)) === 2 && currentPlayer == "black") ||
         (parseInt(parentId.charAt(1)) === 7 && currentPlayer == "white")
-      ) ) {
+      )) {
       let id2 = id1.charAt(0) + (parseInt(id1.charAt(1)) + direction);
       let element2 = document.getElementById(id2);
-      if (((!element2.hasChildNodes() || !element2.querySelector("img")) && (!element1.hasChildNodes() || !element1.querySelector("img")))&& isValidMove(element2) ){
+      if (((!element2.hasChildNodes() || !element2.querySelector("img")) && (!element1.hasChildNodes() || !element1.querySelector("img"))) && isValidMove(element2)) {
         // console.log("can move ahead ", element2);
         element2.classList.add("mayMove");
+        moves++;
         let moveHandler = () => move(element2, pawn);
         element2.addEventListener("click", moveHandler);
         clickEventListener.push({ element: element2, event: "click", handler: moveHandler });
@@ -251,8 +268,11 @@ function pawnEvent() {
     // console.log("rightSquareId", rightSquareId);
     // console.log("leftSquare", leftSquare);
     // console.log("rightSquare", rightSquare);
-    let leftImg = leftSquare.querySelector('img');
-    if (leftSquare && leftSquare.hasChildNodes() && leftImg &&  !leftImg.src.includes(currentPlayer) && !leftImg.src.includes("king") && isValidMove(leftSquare)) {
+    let leftImg;
+    if (leftSquare) {
+      leftImg = leftSquare.querySelector('img');
+    }
+    if (leftSquare && leftSquare.hasChildNodes() && leftImg && !leftImg.src.includes(currentPlayer) && !leftImg.src.includes("king") && isValidMove(leftSquare)) {
       // console.log("can cut ", leftSquare);
       leftSquare.classList.add("mayCut");
       let moveHandler = () => {
@@ -260,12 +280,16 @@ function pawnEvent() {
           pawn.id = "pawnChange";
           pawnMorfEvent(pawn.id);
         }
+        moves++;
         move(leftSquare, pawn);
       };
       leftSquare.addEventListener("click", moveHandler);
       clickEventListener.push({ element: leftSquare, event: "click", handler: moveHandler });
     }
-    let rightImg = rightSquare.querySelector('img');
+    let rightImg;
+    if (rightSquare) {
+      rightImg = rightSquare.querySelector('img');
+    }
 
     if (rightSquare && rightSquare.hasChildNodes() && rightImg && !rightImg.src.includes(currentPlayer) && !rightImg.src.includes("king") && isValidMove(rightSquare)) {
       // console.log("can cut ", rightSquare);
@@ -275,6 +299,7 @@ function pawnEvent() {
           pawn.id = "pawnChange";
           pawnMorfEvent(pawn.id);
         }
+        moves++;
         move(rightSquare, pawn);
       };
       rightSquare.addEventListener("click", moveHandler);
@@ -282,7 +307,7 @@ function pawnEvent() {
     }
   };
   allPawns.forEach((pawn) => {
-    if (pawn.src.includes(currentPlayer)) {
+    if (pawn.src.includes(currentPlayer)) {//&& checkSystem(pawn.parentElement,"none")
       pawn.addEventListener("click", pawnClickHandler);
       runningEventListener.push({ element: pawn, event: "click", handler: pawnClickHandler });
     }
@@ -299,24 +324,21 @@ const checkAndAddSquares = (parentId, xOffset, yOffset, piece) => {
     const square = document.getElementById(id);
     const squareImg = square.querySelector("img");
     if ((!square.hasChildNodes() || !squareImg) && isValidMove(square)) {
+      moves++;
       square.classList.add("mayMove");
       let moveHandler = () => move(square, piece);
       square.addEventListener("click", moveHandler);
       clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-    } else {
-      if ((squareImg && squareImg.src.includes(currentPlayer)) && isValidMove(square) ){
-        break;
-      }
-      else if (squareImg.src.includes("king") && isValidMove(square)) {
-        break;
-      }
-      else if(isValidMove(square)){
-        square.classList.add("mayCut");
-        let moveHandler = () => move(square, piece);
-        square.addEventListener("click", moveHandler);
-        clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-        break;
-      }
+    } else if ((squareImg && squareImg.src.includes(currentPlayer)) || (squareImg && squareImg.src.includes("king")) || !isValidMove(square)) {
+      break;
+    }
+    else {
+      square.classList.add("mayCut");
+      let moveHandler = () => move(square, piece);
+      moves++;
+      square.addEventListener("click", moveHandler);
+      clickEventListener.push({ element: square, event: "click", handler: moveHandler });
+      break;
     }
 
     row += yOffset;
@@ -359,17 +381,19 @@ function knightEvent() {
       if (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
         const id = String.fromCharCode(col) + row;
         const square = document.getElementById(id);
-
-        if ((!square.hasChildNodes() || !square.querySelector("img")) && isValidMove(square)) {
+        const squareImg = square.querySelector("img");
+        if ((!square.hasChildNodes() || !squareImg) && isValidMove(square)) {
           square.classList.add("mayMove");
+          moves++;
           let moveHandler = () => move(square, knight);
           square.addEventListener("click", moveHandler);
           clickEventListener.push({ element: square, event: "click", handler: moveHandler });
         }
         else {
-          if (!square.querySelector("img").src.includes(currentPlayer) && !square.querySelector("img").src.includes("king") && isValidMove(square)) {
+          if (squareImg && !squareImg.src.includes(currentPlayer) && !squareImg.src.includes("king") && isValidMove(square)) {
             square.classList.add("mayCut");
             let moveHandler = () => move(square, knight);
+            moves++;
             square.addEventListener("click", moveHandler);
             clickEventListener.push({ element: square, event: "click", handler: moveHandler });
           }
@@ -380,16 +404,18 @@ function knightEvent() {
       if (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
         const id = String.fromCharCode(col) + row;
         const square = document.getElementById(id);
-
-        if ((!square.hasChildNodes() || !square.querySelector("img")) && isValidMove(square) ) {
+        const squareImg = square.querySelector("img");
+        if ((!square.hasChildNodes() || !squareImg) && isValidMove(square)) {
           square.classList.add("mayMove");
+          moves++;
           let moveHandler = () => move(square, knight);
           square.addEventListener("click", moveHandler);
           clickEventListener.push({ element: square, event: "click", handler: moveHandler });
         }
         else {
-          if ((!square.querySelector("img").src.includes(currentPlayer)) && isValidMove(square) ) {
+          if ((squareImg && !squareImg.src.includes(currentPlayer)) && isValidMove(square)) {
             square.classList.add("mayCut");
+            moves++;
             let moveHandler = () => move(square, knight);
             square.addEventListener("click", moveHandler);
             clickEventListener.push({ element: square, event: "click", handler: moveHandler });
@@ -480,19 +506,21 @@ function kingEvent() {
     const checkAndAddSquares = (parentId, xOffset, yOffset) => {
       let row = parseInt(parentId.charAt(1)) + yOffset;
       let col = parentId.charCodeAt(0) + xOffset;
-      
+
       // console.log("id:square", id,":" ,square);
       if ((row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0))) {
         const id = String.fromCharCode(col) + row;
         const square = document.getElementById(id);
         const squareImg = square.querySelector("img");
-        if ((!square.hasChildNodes() || !squareImg ) && !checkSystem(id)) {
+        if ((!square.hasChildNodes() || !squareImg) && !checkSystem(id, "king")) {
           square.classList.add("mayMove");
+          moves++;
           let moveHandler = () => move(square, king);
           square.addEventListener("click", moveHandler);
           clickEventListener.push({ element: square, event: "click", handler: moveHandler });
-        } else if (squareImg && !squareImg.src.includes(currentPlayer) && !squareImg.src.includes("king")) {
+        } else if (squareImg && !squareImg.src.includes(currentPlayer) && !squareImg.src.includes("king") && !checkSystem(id, "king")) {
           square.classList.add("mayCut");
+          moves++;
           let moveHandler = () => move(square, king);
           square.addEventListener("click", moveHandler);
           clickEventListener.push({ element: square, event: "click", handler: moveHandler });
@@ -511,7 +539,7 @@ function kingEvent() {
 
   bothKings.forEach((king) => {
     if (king.src.includes(currentPlayer)) {
-      if (checkSystem(king.parentElement.getAttribute("id"))) {
+      if (checkSystem(king.parentElement.getAttribute("id", "king"))) {
         if (currentPlayer === "white") {
           whiteCheck = true;
         } else {
@@ -529,7 +557,7 @@ function kingEvent() {
   });
 }
 
-function checkSystem(king) {
+function checkSystem(king, toChk) {
   // console.log("running checkSystem function")
   let parentId = king;
   const checking = (parentId, xOffset, yOffset, find) => {
@@ -537,8 +565,8 @@ function checkSystem(king) {
     let row = parseInt(parentId.charAt(1)) + yOffset;
     let col = parentId.charCodeAt(0) + xOffset;
     // console.log("row :", row, ", col :", String.fromCharCode(col) , " ,find :", find , " parentid :", parentId);
-    
-    
+
+
     while (row >= 1 && row <= 8 && col >= 'a'.charCodeAt(0) && col <= 'h'.charCodeAt(0)) {
       const id = String.fromCharCode(col) + row;
       const square = document.getElementById(id);
@@ -546,11 +574,9 @@ function checkSystem(king) {
       if (square.hasChildNodes() && quertSelect && quertSelect.src.includes(find) && !quertSelect.src.includes(currentPlayer) && !square.classList.contains("dummy")) {
         return true;
       }
-      else if ((quertSelect && square.hasChildNodes()) || find === "knight" || find === "pawn") {
-        if ((quertSelect && !quertSelect.src.includes("king")) || find === "knight" || find === "pawn") {
-            break;
-        }
-    }
+      else if ((quertSelect && square.hasChildNodes()) || (square.classList.contains("dummy") && toChk != "king") || find === "knight" || find === "pawn") {
+        break;
+      }
       row += yOffset;
       col += xOffset;
     }
@@ -597,14 +623,11 @@ function checkSystem(king) {
 
 function isValidMove(box) {
   // console.log("no check");
-  if (!whiteCheck && !blackCheck) {
-    return true;
-  }
-  else if(whiteCheck && currentPlayer == "black"){
+  if (whiteCheck && currentPlayer == "black") {
     console.log("its either illegal move or black wins")
     return false;
   }
-  else if(blackCheck && currentPlayer == "white"){
+  else if (blackCheck && currentPlayer == "white") {
     console.log("its either illegal move or white wins")
     return false;
   }
@@ -615,12 +638,24 @@ function isValidMove(box) {
   parentId.classList.add("dummy");
   //getting king which is in check
   let king = document.querySelector(`img[src*='${currentPlayer}/king.png']`);
-  console.log("king is ", king);
-  if(checkSystem(king.parentElement.getAttribute("id"))){
+  // console.log("king is ", king);
+  if (checkSystem(king.parentElement.getAttribute("id", "other"))) {
     parentId.classList.remove("dummy");
     return false;
   }
   parentId.classList.remove("dummy");
-  moves++;
   return true;
 }
+
+
+// function checkMate() {
+//   let allPeice = document.querySelectorAll("img[src*='${currentPlayer}']");
+//   //there are things saved in runningEventListener use it and running for all possible moves
+//   //if no possible moves and check then checkmate
+//   //if no possible moves and no check then stalemate
+//   //if possible moves then no checkmate
+
+
+
+
+// }
