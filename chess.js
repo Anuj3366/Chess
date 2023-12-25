@@ -1,4 +1,3 @@
-//problem , moving after check , some illegal move of king(two king with each other) , castle,En Passant pawn move , no winning check and no stalemate check
 mapping();
 let currentPlayer = "white";
 let displayPlayer = document.getElementById("displayPlayer");
