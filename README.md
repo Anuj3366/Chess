@@ -11,7 +11,7 @@ This Chess project is a browser-based implementation of the classic game of Ches
 To play the Chess game, follow these simple steps:
 
 1. Open your web browser.
-2. Navigate to the [Chess Game](https://anuj3366.github.io/Chess/).
+2. Navigate to the [Chess Game](https://chessbyanuj.netlify.app/).
 3. Two players can sit at the same device and take turns making moves.
 4. Use the mouse to select and move pieces on the chessboard.
 5. The game enforces the rules of chess, ensuring a fair and enjoyable experience for both players.
